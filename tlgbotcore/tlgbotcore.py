@@ -46,8 +46,16 @@ class TlgBotCore(TelegramClient):
             self._logger.info(f"Нет папки с плагинами {self._plugin_path}")
             return
 
-        for p in Path().glob(f"{self._plugin_path}/*.py"):
-            self.load_plugin_from_file(p)
+        # получим все папки плагинов
+        content = os.listdir(self._plugin_path)
+
+        self._logger.info(content)
+
+        for directory in content:
+            if os.path.isdir(f"{self._plugin_path}/{directory}"):
+                self._logger.info(f"папка плагина {directory}")
+                for p in Path().glob(f"{self._plugin_path}/{directory}/*.py"):
+                    self.load_plugin_from_file(p)
         # ------- END Загрузка плагинов бота
 
     async def _async_init(self, **kwargs):
@@ -70,9 +78,9 @@ class TlgBotCore(TelegramClient):
         # декоратор, см. например _core.py
 
         mod.logger = logging.getLogger(shortname)
-        # mod.storage = self.storage(f"{self._name}/{shortname}")
 
         spec.loader.exec_module(mod)
+
         self._plugins[shortname] = mod
         self._logger.info(f"Successfully loaded plugin {shortname}")
 

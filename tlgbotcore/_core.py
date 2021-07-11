@@ -17,21 +17,28 @@ async def load_reload(event):
         await event.delete()
     shortname = event.pattern_match["shortname"]
 
-    try:
-        if shortname in tlgbot._plugins:
-            await tlgbot.remove_plugin(shortname)
-        tlgbot.load_plugin(shortname)
+    if shortname == "_core":
+        await event.respond("Плагин _core нельзя перезагружать.")
+        return
+    else:
+        try:
 
-        msg = await event.respond(
-            f"Successfully (re)loaded plugin {shortname}")
-        if not tlgbot.me.bot:
-            await asyncio.sleep(DELETE_TIMEOUT)
-            await tlgbot.delete_messages(msg.to_id, msg)
+            if shortname in tlgbot._plugins:
+                await tlgbot.remove_plugin(shortname)
 
-    except Exception as e:
-        tb = traceback.format_exc()
-        logger.warn(f"Failed to (re)load plugin {shortname}: {tb}")
-        await event.respond(f"Failed to (re)load plugin {shortname}: {e}")
+            # так как плагин хранится в папке с именем плагина
+            tlgbot.load_plugin(f"{shortname}/{shortname}")
+
+            msg = await event.respond(
+                f"Successfully (re)loaded plugin {shortname}")
+            if not tlgbot.me.bot:
+                await asyncio.sleep(DELETE_TIMEOUT)
+                await tlgbot.delete_messages(msg.to_id, msg)
+
+        except Exception as e:
+            tb = traceback.format_exc()
+            logger.warn(f"Failed to (re)load plugin {shortname}: {tb}")
+            await event.respond(f"Failed to (re)load plugin {shortname}: {e}")
 
 
 @tlgbot.on(tlgbot.admin_cmd(r"(?:unload|disable|remove)", r"(?P<shortname>\w+)"))
@@ -64,3 +71,27 @@ async def list_plugins(event):
         await event.edit(result)
     else:
         await event.respond(result)
+
+
+@tlgbot.on(tlgbot.admin_cmd(r"(?:help)", r"(?P<shortname>\w+)"))
+async def remove(event):
+    if not tlgbot.me.bot:
+        await event.delete()
+    shortname = event.pattern_match["shortname"]
+
+    if shortname == "_core":
+        path_help_file = 'tlgbotcore/_core.md'
+    else:
+        path_help_file = f"{tlgbot._plugin_path}/{shortname}/{shortname}.md"
+
+    if shortname in tlgbot._plugins:
+        try:
+            with open(path_help_file) as f:
+                content_help = f.read()
+        except FileNotFoundError:
+            content_help = tlgbot._plugins[shortname].__doc__
+            if not content_help:
+                content_help = "Справочной информации по данному плагину нет."
+        await event.reply(content_help)
+    else:
+        await event.reply(f"Plugin {shortname} is not loaded")
