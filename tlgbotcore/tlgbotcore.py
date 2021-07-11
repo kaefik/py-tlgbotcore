@@ -4,6 +4,8 @@ import telethon.utils
 import telethon.events
 from . import hacks
 
+from .sqliteutils import SettingUser, User, Role
+
 import asyncio
 import logging
 from pathlib import Path
@@ -18,10 +20,31 @@ class TlgBotCore(TelegramClient):
         self._name = session
         self._plugins = {}
         self._plugin_path = plugin_path
-        self.admins = admins
+        # self.admins = admins
+
+        # настройки пользователей бота в том числе и администратора admin_client
+        name_file_settings = 'settings.db'
+        if not os.path.exists(name_file_settings):
+            self._logger.info('Нет файла БД настроек')
+            name_admin = ''
+            settings = SettingUser(namedb=name_file_settings)
+
+            for admin_client in admins:
+                admin_User = User(id=admin_client, role=Role.admin, active=True)
+                settings.add_user(admin_User)
+        else:
+            self._logger.info('Есть файл БД настроек')
+            settings = SettingUser(namedb=name_file_settings)
+
+        self.settings = settings
+
+        # получение всех пользователей из БД
+        self.admins = self.settings.get_user_type_id(Role.admin)  # список администраторов бота
+        self._logger.info(f"Админы ботов {self.admins}")
+        # END настройки бота
 
         if bot_token is None:
-            print("Не указан параметр bot_token.")
+            self._logger.info("Не указан параметр bot_token.")
 
         super().__init__(session, **kwargs)
 
