@@ -120,6 +120,10 @@ async def remove(event):
 @tlgbot.on(tlgbot.admin_cmd("adduser"))
 # @bot.on(events.NewMessage(chats=allow_user_id(settings.get_all_user()), pattern='/AddUser'))
 async def add_user_admin(event):
+    """
+    добавление активного пользователя с ролью обычного пользователя , по возможности получаем имя пользователя
+    :return:
+    """
     # sender = await event.get_sender()
     await event.respond("Выполняется команда /adduser")
     # диалог с запросом информации нужной для работы команды /AddUser
@@ -140,7 +144,7 @@ async def add_user_admin(event):
         new_name_user = await get_name_user(event.client, int(id_new_user))
 
         print('Имя нового пользователя', new_name_user)
-        new_user = User(id=id_new_user)
+        new_user = User(id=id_new_user, active=True, name=new_name_user)
         tlgbot.settings.add_user(new_user)
         # add_new_user(id_new_user, settings)
         await conv.send_message(f"Добавили нового пользователя с ID: {id_new_user} с именем {new_name_user}")
