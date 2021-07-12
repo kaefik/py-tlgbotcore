@@ -145,3 +145,18 @@ async def add_user_admin(event):
         # add_new_user(id_new_user, settings)
         await conv.send_message(f"Добавили нового пользователя с ID: {id_new_user} с именем {new_name_user}")
 
+
+@tlgbot.on(tlgbot.admin_cmd("infouser"))
+async def info_user_admin(event):
+    """
+    вывод информации о пользователях которые имеют доступ к боту
+    :return:
+    """
+    ids = []
+    clients = tlgbot.settings.get_all_user()
+    for cl in clients:
+        ids.append(cl.__str__())
+
+    ids = [str(x) for x in ids]
+    strs = '\n'.join(ids)
+    await event.respond(f"Пользователи которые имеют доступ:\n{strs}")
