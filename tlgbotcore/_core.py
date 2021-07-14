@@ -164,3 +164,31 @@ async def info_user_admin(event):
     ids = [str(x) for x in ids]
     strs = '\n'.join(ids)
     await event.respond(f"Пользователи которые имеют доступ:\n{strs}")
+
+
+@tlgbot.on(tlgbot.admin_cmd("deluser"))
+async def del_user_admin(event):
+    """
+    удаление пользователя из БД пользователей, тем самым запрещая доступ указанному пользователю
+    :return:
+    """
+    # диалог с запросом информации нужной для работы команды /deluser
+    chat_id = event.chat_id
+    async with tlgbot.conversation(chat_id) as conv:
+        # response = conv.wait_event(events.NewMessage(incoming=True))
+        await conv.send_message("Привет! Введите номер id пользователя "
+                                "который нужно запретить доступ к боту")
+        id_del_user = await conv.get_response()
+        id_del_user = id_del_user.message
+        while not any(x.isdigit() for x in id_del_user):
+            await conv.send_message("ID пользователя - это число. "
+                                    "Попробуйте еще раз.")
+            id_del_user = await conv.get_response()
+            id_del_user = id_del_user.message
+
+        if not (int(id_del_user) in tlgbot.admins):
+            tlgbot.settings.del_user(int(id_del_user))
+            await conv.send_message(f"Пользователю с ID: {id_del_user} доступ к боту запрещен.")
+        else:
+            await conv.send_message("Удаление пользователя с правами администратора запрещено.")
+# END команды работы с БД пользователей
