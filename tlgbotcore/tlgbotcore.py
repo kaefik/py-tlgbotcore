@@ -4,7 +4,7 @@ import telethon.utils
 import telethon.events
 from . import hacks
 
-from .sqliteutils import SettingUser, User, Role
+from tlgbotcore.sqliteutils import SettingUser, User, Role
 
 import asyncio
 import logging
@@ -15,28 +15,37 @@ import inspect
 
 class TlgBotCore(TelegramClient):
     def __init__(self, session, *, plugin_path="plugins", storage=None, admins=[],
-                 bot_token=None, proxy_server=None, proxy_port=None, proxy_key=None, **kwargs):
+                 bot_token=None, proxy_server=None, proxy_port=None, proxy_key=None, type_db='SQLITE', **kwargs):
         self._logger = logging.getLogger(session)
         self._name = session
         self._plugins = {}
         self._plugin_path = plugin_path
         # self.admins = admins
 
+        self._logger.info(type_db)
+        self.settings = None
+
         # настройки пользователей бота в том числе и администратора admin_client
-        name_file_settings = 'settings.db'
-        if not os.path.exists(name_file_settings):
-            self._logger.info('Нет файла БД настроек')
-            name_admin = ''
-            settings = SettingUser(namedb=name_file_settings)
+        if type_db == 'SQLITE':
+            name_file_settings = 'settings.db'
+            if not os.path.exists(name_file_settings):
+                self._logger.info('Нет файла БД настроек')
+                name_admin = ''
+                settings = SettingUser(namedb=name_file_settings)
 
-            for admin_client in admins:
-                admin_User = User(id=admin_client, role=Role.admin, active=True)
-                settings.add_user(admin_User)
+                for admin_client in admins:
+                    admin_User = User(id=admin_client, role=Role.admin, active=True)
+                    settings.add_user(admin_User)
+
+            else:
+                self._logger.info('Есть файл БД настроек')
+                settings = SettingUser(namedb=name_file_settings)
+            self.settings = settings
+        elif type_db == 'CSV':
+            self._logger.info(f"БД типа CSV")
         else:
-            self._logger.info('Есть файл БД настроек')
-            settings = SettingUser(namedb=name_file_settings)
-
-        self.settings = settings
+            self._logger.info(f"Неправильный тип БД для настроек пользователя.")
+            return
 
         # получение всех пользователей из БД
         self.admins = self.settings.get_user_type_id(Role.admin)  # список администраторов бота

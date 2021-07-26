@@ -9,3 +9,8 @@ TLG_ADMIN_ID_CLIENT = [1258889]  # admin clients for admin telegram bot
 TLG_PROXY_SERVER = None  # address MTProxy Telegram
 TLG_PROXY_PORT = None  # port  MTProxy Telegram
 TLG_PROXY_KEY = None  # secret key  MTProxy Telegram
+
+# for save settings user
+# CSV - сохранение данных настроек для доступа к боту используя БД в формате CSV
+# SQLITE - сохранение данных настроек для доступа к боту используя БД в формате sqlite3
+TYPE_DB = "SQLITE"
