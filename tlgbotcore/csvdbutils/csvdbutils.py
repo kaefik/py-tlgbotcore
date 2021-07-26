@@ -154,45 +154,19 @@ class SettingUser:
             создание БД настроек бота
             возвращает True, если операция создания успешно.
         """
-        # try:
-        if os.path.exists(self.db):
-            if force:
-                print('папка БД существует')
-                os.remove(self.db)
-                print('папка БД удаляем')
-            else:
-                print('папка БД существует')
-                # connect = sqlite3.connect(self.db)
-                # return connect
-                # возможно тут открыть файл и передать дескриптор файла
-                return True
 
-        os.mkdir(self.db)
+        self.connect = CSVDB(name_db=self.db, force=force)
 
-        #     """
-        #         Создание таблицы USER - информация о пользователях
-        #         поля:
-        #             id - id пользователя из телеграмма
-        #             name - имя пользователя
-        #             active - если 0, пользователь неактивный, иначе пользователь активный
-        #     """
-        #     cursor.execute("""CREATE TABLE user
-        #               (id INTEGER, name text, active INTEGER)
-        #            """)
-        #
-        #     """
-        #         Создание таблицы settings  - информация о настройках бота
-        #         поля:
-        #             id - id пользователя из телеграмма (связана с полем id таблицы USER
-        #             role - роль пользователя: admin - администратор бота, user - обычный пользователь бота
-        #     """
-        #     cursor.execute("""CREATE TABLE settings
-        #               (id INTEGER, role text)
-        #        """)
-        # except sqlite3.Error as error:
-        #     print("Ошибка при подключении к sqlite", error)
-        #     return False
-
+        """
+            Создание таблицы USER - информация о пользователях
+            поля:
+                id - id пользователя из телеграмма (тип: INTEGER)
+                name - имя пользователя text
+                active - если 0, пользователь неактивный, иначе пользователь активный (тип: INTEGER)
+                role - роль пользователя: admin - администратор бота, user - обычный пользователь бота (тип: text)
+        """
+        headers_user = ['id', 'name', 'active', 'role']
+        self.connect.create_table(name_table='user', colums=headers_user)
 
         return True
 
@@ -407,7 +381,6 @@ if __name__ == '__main__':
     user2.id = 123456
     user2.active = True
     user2.role = Role.admin
-
 
     db = SettingUser()
 
