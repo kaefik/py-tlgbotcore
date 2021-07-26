@@ -1,0 +1,108 @@
+"""
+провести в порядок тесты
+"""
+
+import unittest
+
+import os
+import shutil
+
+from csvdb import CSVDB
+
+
+class TestCSVDB(unittest.TestCase):
+    """
+        тесты для проверки работы объекта CSVDB
+    """
+
+    def remove_dbdir(self):
+        """
+        удаление БД папки даже она существует
+        """
+        if os.path.exists(self.tst_name_db):
+            shutil.rmtree(self.tst_name_db)
+
+    def create_dbdir(self):
+        """
+        создание БД папки если ёё нет, если есть то удаляется и заново создается
+        """
+        if os.path.exists(self.tst_name_db):
+            shutil.rmtree(self.tst_name_db)
+
+        os.mkdir(self.tst_name_db)
+        print("File ", self.file1)
+        # создаем простой файл внутри папки
+        with open(self.file1, "w") as f:
+            f.write("Tecт")
+
+    def setUp(self) -> None:
+        self.tst_name_db = "my_test_db"
+        self.file1 = f"{self.tst_name_db}/file1.csv"
+        self.tst_table1 = 'table1'
+
+    def tearDown(self) -> None:
+        self.remove_dbdir()
+
+    def test_initdb_noexist_dirdb(self):
+        """
+            проверка правильно ли отрабатывается инициализация БД когда папки БД не существует
+        """
+
+        # инициализация тестового окружения
+        self.remove_dbdir()
+
+        db = CSVDB(name_db=self.tst_name_db)
+        flag = os.path.exists(self.tst_name_db) and os.path.isdir(self.tst_name_db)
+        self.assertEqual(True, flag)
+
+    def test_initdb_exist_dirdb_force(self):
+        """
+            проверка правильно ли отрабатывается инициализация БД когда папки БД  существует и нужно перезаписать
+        """
+
+        # инициализация тестового окружения
+        self.create_dbdir()
+
+        db = CSVDB(name_db=self.tst_name_db, force=True)
+        flag_dir = os.path.exists(self.tst_name_db) and os.path.isdir(self.tst_name_db)
+
+        flag_file = os.path.exists(self.file1) and os.path.isfile(self.tst_name_db)
+
+        self.assertEqual(True, flag_dir)
+        self.assertEqual(False, flag_file)
+
+    def test_initdb_exist_dirdb_noforce(self):
+        """
+            проверка правильно ли отрабатывается инициализация БД когда папки БД  существует и НЕ нужно перезаписать
+        """
+
+        # инициализация тестового окружения
+        self.create_dbdir()
+
+        db = CSVDB(name_db=self.tst_name_db, force=False)
+        flag_dir = os.path.exists(self.tst_name_db) and os.path.isdir(self.tst_name_db)
+
+        flag_file = os.path.exists(self.file1) and os.path.isfile(self.file1)
+
+        self.assertEqual(True, flag_dir)
+        self.assertEqual(True, flag_file)
+
+    def test_create_table(self):
+        """
+        создание таблицы
+        """
+        self.remove_dbdir()
+
+        db = CSVDB(name_db=self.tst_name_db, force=False)
+
+        db.create_table(name_table=self.tst_table1, colums=['NUMBER', 'FIO', 'ROLE'])
+
+        full_path_table1 = f"{self.tst_name_db}/{self.tst_table1}.csv"
+        flag_name_table = db.tables[0]
+
+        flag_exist_table = os.path.exists(full_path_table1)
+        print(full_path_table1)
+        self.assertEqual(True, flag_exist_table)
+
+    if __name__ == '__main__':
+        unittest.main()

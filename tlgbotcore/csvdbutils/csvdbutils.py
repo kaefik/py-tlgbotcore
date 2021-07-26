@@ -1,13 +1,12 @@
 """
-модуль для работы с sqlite в качестве хранилища настройки бота
+модуль для работы с набора csv файлов эмулирующих работы в таблицами в качестве хранилища настройки бота
 
-БД настроек состоит из следующих таблиц
-    1) таблица пользователей USERS
+БД охраняется в папке названием самой БД , внутри папки находятся файлы csv с названиями таблиц:
+    1) таблица пользователей USERS.csv
     2) таблица ролей (прав доступа к боту)
 """
 
 import os
-import sqlite3
 from enum import Enum
 
 
@@ -120,7 +119,7 @@ class User:
 
 class SettingUser:
 
-    def __init__(self, namedb='settings.db', force=False):
+    def __init__(self, namedb='settings_db', force=False):
         """
             инициализация БД настроек бота
                 namedb - название БД
@@ -133,63 +132,69 @@ class SettingUser:
         """
             открыть файл настроек
         """
-        try:
-            conn = sqlite3.connect(self.db)
-        except sqlite3.Error as error:
-            print("Ошибка при подключении к sqlite", error)
-            return False
-        finally:
-            return True
+        # try:
+        #     conn = sqlite3.connect(self.db)
+        # except sqlite3.Error as error:
+        #     print("Ошибка при подключении к sqlite", error)
+        #     return False
+        # finally:
+        #     return True
+        pass
 
     def close(self):
         """
             закрытие подключения к БД
         """
-        if not (self.connect is None):
-            self.connect.close()
+        # if not (self.connect is None):
+        #     self.connect.close()
+        pass
 
     def __createnewdb(self, force=False):
         """
             создание БД настроек бота
             возвращает True, если операция создания успешно.
         """
-        try:
-            if os.path.exists(self.db):
-                if force:
-                    # print('Файл существует')
-                    os.remove(self.db)
-                else:
-                    connect = sqlite3.connect(self.db)
-                    return connect
+        # try:
+        if os.path.exists(self.db):
+            if force:
+                print('папка БД существует')
+                os.remove(self.db)
+                print('папка БД удаляем')
+            else:
+                print('папка БД существует')
+                # connect = sqlite3.connect(self.db)
+                # return connect
+                # возможно тут открыть файл и передать дескриптор файла
+                return True
 
-            connect = sqlite3.connect(self.db)
-            cursor = connect.cursor()
+        os.mkdir(self.db)
 
-            """
-                Создание таблицы USER - информация о пользователях
-                поля: 
-                    id - id пользователя из телеграмма
-                    name - имя пользователя
-                    active - если 0, пользователь неактивный, иначе пользователь активный
-            """
-            cursor.execute("""CREATE TABLE user 
-                      (id INTEGER, name text, active INTEGER)
-                   """)
+        #     """
+        #         Создание таблицы USER - информация о пользователях
+        #         поля:
+        #             id - id пользователя из телеграмма
+        #             name - имя пользователя
+        #             active - если 0, пользователь неактивный, иначе пользователь активный
+        #     """
+        #     cursor.execute("""CREATE TABLE user
+        #               (id INTEGER, name text, active INTEGER)
+        #            """)
+        #
+        #     """
+        #         Создание таблицы settings  - информация о настройках бота
+        #         поля:
+        #             id - id пользователя из телеграмма (связана с полем id таблицы USER
+        #             role - роль пользователя: admin - администратор бота, user - обычный пользователь бота
+        #     """
+        #     cursor.execute("""CREATE TABLE settings
+        #               (id INTEGER, role text)
+        #        """)
+        # except sqlite3.Error as error:
+        #     print("Ошибка при подключении к sqlite", error)
+        #     return False
 
-            """
-                Создание таблицы settings  - информация о настройках бота
-                поля:
-                    id - id пользователя из телеграмма (связана с полем id таблицы USER 
-                    role - роль пользователя: admin - администратор бота, user - обычный пользователь бота
-            """
-            cursor.execute("""CREATE TABLE settings 
-                      (id INTEGER, role text)
-               """)
-        except sqlite3.Error as error:
-            print("Ошибка при подключении к sqlite", error)
-            return False
 
-        return connect
+        return True
 
     def add_user(self, new_user):
         """
@@ -303,24 +308,24 @@ class SettingUser:
             получить всех пользователей
             тест: есть
         """
-        cursor = self.connect.cursor()
-        sqlite_query_user = """SELECT * from user"""
-        cursor.execute(sqlite_query_user)
-        result_user = cursor.fetchall()
-
-        sqlite_query_user = """SELECT * from settings"""
-        cursor.execute(sqlite_query_user)
-        result_settings = cursor.fetchall()
+        # cursor = self.connect.cursor()
+        # sqlite_query_user = """SELECT * from user"""
+        # cursor.execute(sqlite_query_user)
+        # result_user = cursor.fetchall()
+        #
+        # sqlite_query_user = """SELECT * from settings"""
+        # cursor.execute(sqlite_query_user)
+        # result_settings = cursor.fetchall()
 
         result = []
 
-        for row in result_user:
-            result.append(User(id=row[0], name=row[1], active=row[2]))
-
-        for i in range(0, len(result)):
-            for row in result_settings:
-                if result[i].id == row[0]:
-                    result[i].role = row[1]
+        # for row in result_user:
+        #     result.append(User(id=row[0], name=row[1], active=row[2]))
+        #
+        # for i in range(0, len(result)):
+        #     for row in result_settings:
+        #         if result[i].id == row[0]:
+        #             result[i].role = row[1]
 
         return result
 
@@ -330,9 +335,9 @@ class SettingUser:
             тест: -
         """
         result = []
-        users = self.get_all_user()
-        for user in users:
-            result.append(user.id)
+        # users = self.get_all_user()
+        # for user in users:
+        #     result.append(user.id)
         return result
 
     def get_user_type(self, type_user):
@@ -341,28 +346,29 @@ class SettingUser:
             возвращает: массив пользователей, если пользователей нет, то пустой массив
             тест: есть
         """
-        result = []
-
-        cursor = self.connect.cursor()
-        sqlite_query_settings = f"""SELECT * FROM settings WHERE role='{type_user}'"""
-        cursor.execute(sqlite_query_settings)
-        result_setting = cursor.fetchall()
-
-        if len(result_setting) == 0:
-            return result
-
-        for row in result_setting:
-            idd = row[0]
-
-            sqlite_query_user = f"""SELECT * FROM user WHERE id={idd}"""
-            cursor.execute(sqlite_query_user)
-            result_user = cursor.fetchone()
-
-            if len(result_user) == 0:
-                continue
-
-            result.append(User(id=result_user[0], name=result_user[1], active=result_user[2],
-                               role=row[1]))
+        # result = []
+        #
+        # cursor = self.connect.cursor()
+        # sqlite_query_settings = f"""SELECT * FROM settings WHERE role='{type_user}'"""
+        # cursor.execute(sqlite_query_settings)
+        # result_setting = cursor.fetchall()
+        #
+        # if len(result_setting) == 0:
+        #     return result
+        #
+        # for row in result_setting:
+        #     idd = row[0]
+        #
+        #     sqlite_query_user = f"""SELECT * FROM user WHERE id={idd}"""
+        #     cursor.execute(sqlite_query_user)
+        #     result_user = cursor.fetchone()
+        #
+        #     if len(result_user) == 0:
+        #         continue
+        #
+        #     result.append(User(id=result_user[0], name=result_user[1], active=result_user[2],
+        #                        role=row[1]))
+        result = None
 
         return result
 
@@ -373,9 +379,9 @@ class SettingUser:
             тест: -
         """
         result = []
-        users = self.get_user_type(type_user=type_user)
-        for user in users:
-            result.append(user.id)
+        # users = self.get_user_type(type_user=type_user)
+        # for user in users:
+        #     result.append(user.id)
         return result
 
     def fix_settings(self):
@@ -388,19 +394,23 @@ class SettingUser:
 
 
 if __name__ == '__main__':
-    # user1 = User()
-    # user1.name = 'User1'
-    # user1.id = 123456
-    # user1.active = True
-    # user1.role = Role.admin
+    user1 = User()
+    user1.name = 'User1'
+    user1.id = 123456
+    user1.active = True
+    user1.role = Role.admin
     # user1.typeresult = SettingOne.sound
     # user1.qualityresult = SettingTwo.medium
     #
-    # user2 = User()
-    # user2.name = 'User1'
-    # user2.id = 123456
-    # user2.active = True
-    # user2.role = Role.admin
+    user2 = User()
+    user2.name = 'User1'
+    user2.id = 123456
+    user2.active = True
+    user2.role = Role.admin
+
+
+    db = SettingUser()
+
     # user2.typeresult = SettingOne.sound
     # user2.qualityresult = SettingTwo.medium
     # print(user1 == user2)
@@ -410,4 +420,5 @@ if __name__ == '__main__':
     # for name, member in SettingOne.__members__.items():
     #     print(name, member)
 
+    # print(os.path.exists('settings_db'))
     pass
