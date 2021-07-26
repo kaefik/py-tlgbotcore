@@ -100,7 +100,7 @@ class TestCSVDB(unittest.TestCase):
 
         db.create_table(name_table=self.tst_table1, colums=headers_original)
 
-        full_path_table1 = f"{self.tst_name_db}/{self.tst_table1}.csv"
+        full_path_table1 = db.full_path(self.tst_table1)
         flag_name_table = db.tables[0]
 
         flag_exist_table = os.path.exists(full_path_table1)
@@ -132,6 +132,34 @@ class TestCSVDB(unittest.TestCase):
 
         self.assertEqual(True, flag_noexist)
         self.assertEqual(False, flag_exist)
+
+    def test_insert_data(self):
+        """
+        тест вставки данных
+        :return:
+        """
+        headers_original = ['NUMBER', 'FIO', 'ROLE']
+        data_original = {'NUMBER': '1', 'FIO': 'Ivanov Fedor', 'ROLE': 'Admin'}
+
+        self.remove_dbdir()
+
+        db = CSVDB(name_db=self.tst_name_db, force=False)
+        flag_noexist = db.create_table(name_table=self.tst_table1, colums=headers_original)
+
+        full_path_table1 = db.full_path(self.tst_table1)
+
+        db.insert_data(name_table=self.tst_table1, data=data_original)
+
+        result_data = db.getall(name_table=self.tst_table1)
+        self.assertEqual(result_data[0], data_original)
+        #  проверяем что запись одна
+        self.assertEqual(1, len(result_data))
+
+        # добавляем ещё одну запись
+        db.insert_data(name_table=self.tst_table1, data=data_original)
+
+        result_data = db.getall(name_table=self.tst_table1)
+        self.assertEqual(2, len(result_data))
 
     if __name__ == '__main__':
         unittest.main()
