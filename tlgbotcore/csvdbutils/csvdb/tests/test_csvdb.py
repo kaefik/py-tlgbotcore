@@ -117,5 +117,21 @@ class TestCSVDB(unittest.TestCase):
 
         self.assertEqual(headers, headers_original)
 
+    def test_create_table_exist_table(self):
+        """
+        создание таблицы, файл которой уже есть
+        """
+        self.remove_dbdir()
+
+        db = CSVDB(name_db=self.tst_name_db, force=False)
+
+        headers_original = ['NUMBER', 'FIO', 'ROLE']
+
+        flag_noexist = db.create_table(name_table=self.tst_table1, colums=headers_original)
+        flag_exist = db.create_table(name_table=self.tst_table1, colums=headers_original)
+
+        self.assertEqual(True, flag_noexist)
+        self.assertEqual(False, flag_exist)
+
     if __name__ == '__main__':
         unittest.main()

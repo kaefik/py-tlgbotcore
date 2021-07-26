@@ -44,6 +44,6 @@ class CSVDB:
         with open(full_path, mode="w", encoding='utf-8') as w_file:
             file_writer = csv.DictWriter(w_file, delimiter=";", fieldnames=colums)
             file_writer.writeheader()
-            # file_writer.writerow('')
 
         self.tables.append(name_table)
+        return True
