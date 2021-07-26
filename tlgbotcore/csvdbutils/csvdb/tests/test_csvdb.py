@@ -6,6 +6,7 @@ import unittest
 
 import os
 import shutil
+import csv
 
 from csvdb import CSVDB
 
@@ -95,14 +96,26 @@ class TestCSVDB(unittest.TestCase):
 
         db = CSVDB(name_db=self.tst_name_db, force=False)
 
-        db.create_table(name_table=self.tst_table1, colums=['NUMBER', 'FIO', 'ROLE'])
+        headers_original = ['NUMBER', 'FIO', 'ROLE']
+
+        db.create_table(name_table=self.tst_table1, colums=headers_original)
 
         full_path_table1 = f"{self.tst_name_db}/{self.tst_table1}.csv"
         flag_name_table = db.tables[0]
 
         flag_exist_table = os.path.exists(full_path_table1)
         print(full_path_table1)
+
+        # проверяем что файл присутствует
         self.assertEqual(True, flag_exist_table)
+
+        # проверяем заголовки файла таблицы
+        headers = []
+        with open(full_path_table1) as f:
+            reader = csv.DictReader(f, delimiter=";")
+            headers = reader.fieldnames
+
+        self.assertEqual(headers, headers_original)
 
     if __name__ == '__main__':
         unittest.main()

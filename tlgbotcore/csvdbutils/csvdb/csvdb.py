@@ -34,15 +34,16 @@ class CSVDB:
     def create_table(self, name_table='NonameTable', colums=['col1', 'col2']):
         """
         создание таблицы в БД, проверяется есть ли файл
+        сым файл разделен ;
         return: True - если успешно создан файл таблицы, иначе False
         """
         full_path = f"{self.name_db}/{name_table}.csv"
         if os.path.exists(full_path):
             return False
 
-        with open(name_table, mode="w", encoding='utf-8') as w_file:
-            file_writer = csv.DictWriter(w_file, delimiter=",", fieldnames=colums)
+        with open(full_path, mode="w", encoding='utf-8') as w_file:
+            file_writer = csv.DictWriter(w_file, delimiter=";", fieldnames=colums)
             file_writer.writeheader()
-            file_writer.writerow('')
+            # file_writer.writerow('')
 
         self.tables.append(name_table)
