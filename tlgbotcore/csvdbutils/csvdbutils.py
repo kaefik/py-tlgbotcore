@@ -9,6 +9,8 @@
 import os
 from enum import Enum
 
+from csvdb.csvdb import CSVDB
+
 
 # доступные роли пользователя
 class Role(Enum):
@@ -43,8 +45,6 @@ class User:
         self._qualityresult = SettingTwo.medium
 
     def __init__(self, id=-1, name='', active=False, role=Role.user):
-        # , typeresult=SettingOne.sound,
-        #          qualityresult=SettingTwo.medium):
         self._id = id
         self._name = name
         if active == 0:
@@ -174,9 +174,9 @@ class SettingUser:
         """
             добавление нового пользователя new_user (тип User)
             возвращает: True - операция добавления пользователя удалась, False - ошибка при добавлении или пользователь существует
-            тест: есть
+            тест:
         """
-        cursor = self.connect.cursor()
+        # cursor = self.connect.cursor()
 
         id_exist = self.is_exist_user(new_user.id)
 
@@ -201,7 +201,7 @@ class SettingUser:
     def is_exist_user(self, idd):
         """
             проверить есть ли БД пользователь с id
-            тест: есть
+            тест:
         """
         result = self.get_user(idd=idd)
         if result is not None:
@@ -212,7 +212,7 @@ class SettingUser:
     def del_user(self, idd):
         """
             удаление пользователя с id
-            тест: есть
+            тест:
         """
         cursor = self.connect.cursor()
 
@@ -229,7 +229,7 @@ class SettingUser:
     def update_user(self, new_user):
         """
             обновить данные пользователя  User, если такого пользователя нет, то добавляется новый пользователь
-            тест: есть
+            тест:
         """
         # """Update sqlitedb_developers set salary = 10000 where id = 4"""
 
@@ -254,14 +254,14 @@ class SettingUser:
     def get_user(self, idd):
         """
             получить информацию о пользователе по id
-            тест: есть
+            тест:
         """
         result = None
 
         cursor = self.connect.cursor()
-        sqlite_query_user = f"""SELECT * FROM user WHERE id={idd}"""
-        cursor.execute(sqlite_query_user)
-        result_user = cursor.fetchone()
+        # sqlite_query_user = f"""SELECT * FROM user WHERE id={idd}"""
+        # cursor.execute(sqlite_query_user)
+        # result_user = cursor.fetchone()
 
         if result_user is None:
             return result
@@ -280,7 +280,7 @@ class SettingUser:
     def get_all_user(self):
         """
             получить всех пользователей
-            тест: есть
+            тест:
         """
         # cursor = self.connect.cursor()
         # sqlite_query_user = """SELECT * from user"""
@@ -318,7 +318,7 @@ class SettingUser:
         """
             получение всех пользователей с типом type_user (тип Role)
             возвращает: массив пользователей, если пользователей нет, то пустой массив
-            тест: есть
+            тест:
         """
         # result = []
         #

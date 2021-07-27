@@ -1,70 +1,65 @@
-# """
-# тест для SettingUser вариант CSV БД
-# """
-# import unittest
-# import os
-# import shutil
-#
-# from sqlitelib.sqliteutils import User, SettingUser, Role, SettingOne, SettingTwo
-#
-#
-# class TestSettingUser(unittest.TestCase):
-#     """
-#         Тесты для проверки работы настроек пользователя испольуя объект SettingUser
-#     """
-#
-#     @classmethod
-#     def setUpClass(cls) -> None:
-#         cls.current_dir_test = os.path.dirname(os.path.abspath(__file__))
-#         cls.output_dir = cls.current_dir_test + '/db/'
-#         try:
-#             os.mkdir(cls.output_dir)
-#         except FileExistsError:
-#             shutil.rmtree(cls.output_dir, ignore_errors=False, onerror=None)
-#             os.mkdir(cls.output_dir)
-#
-#     @classmethod
-#     def tearDownClass(cls):
-#         pass
-#
-#     def setUp(self) -> None:
-#         self.usr = SettingUser(namedb=self.output_dir + 'settings.db', force=True)  # перед каждым тестом создаем заново
-#
-#         self.user1 = User()
-#         self.user1.name = 'User1'
-#         self.user1.id = 123456
-#         self.user1.active = True
-#         self.user1.role = Role.admin
-#         self.user1.typeresult = SettingOne.sound
-#         self.user1.qualityresult = SettingTwo.medium
-#
-#         self.user2 = User()
-#         self.user2.name = 'User2'
-#         self.user2.id = 654321
-#         self.user2.active = True
-#         self.user2.role = Role.user
-#         self.user2.typeresult = SettingOne.video
-#         self.user2.qualityresult = SettingTwo.low
-#
-#         self.user3 = User()
-#         self.user3.name = 'User3'
-#         self.user3.id = 7854125
-#         self.user3.active = True
-#         self.user3.role = Role.user
-#         self.user3.typeresult = SettingOne.sound
-#         self.user3.qualityresult = SettingTwo.high
-#
-#     def tearDown(self) -> None:
-#         self.usr.close()
-#
-#     def test_get_user_exist_id(self):
-#         """
-#             получение пользователя который существует
-#         """
-#         self.usr.add_user(self.user1)
-#         self.usr.add_user(self.user2)
-#         result = self.usr.get_user(self.user1.id)
-#         self.assertEqual(self.user1, result)
+"""
+тест для SettingUser вариант CSV БД
+"""
+import unittest
+import os
+import shutil
+
+from csvdbutils import User, SettingUser, Role
+
+
+class TestSettingUser(unittest.TestCase):
+    """
+        Тесты для проверки работы настроек пользователя используя объект SettingUser
+    """
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.current_dir_test = os.path.dirname(os.path.abspath(__file__))
+        cls.output_dir = cls.current_dir_test + '/db/'
+        try:
+            os.mkdir(cls.output_dir)
+        except FileExistsError:
+            shutil.rmtree(cls.output_dir, ignore_errors=False, onerror=None)
+            os.mkdir(cls.output_dir)
+
+    @classmethod
+    def tearDownClass(cls):
+        pass
+
+    def setUp(self) -> None:
+        self.usr = SettingUser(namedb=self.output_dir + 'settings_db', force=True)  # перед каждым тестом создаем заново
+
+        self.user1 = User()
+        self.user1.name = 'User1'
+        self.user1.id = 123456
+        self.user1.active = True
+        self.user1.role = Role.admin
+
+        self.user2 = User()
+        self.user2.name = 'User2'
+        self.user2.id = 654321
+        self.user2.active = True
+        self.user2.role = Role.user
+
+        self.user3 = User()
+        self.user3.name = 'User3'
+        self.user3.id = 7854125
+        self.user3.active = True
+        self.user3.role = Role.user
+
+    def tearDown(self) -> None:
+        self.usr.close()
+
+    def test_get_user_exist_id(self):
+        """
+            получение пользователя который существует
+        """
+        # self.usr.add_user(self.user1)
+        # self.usr.add_user(self.user2)
+        # result = self.usr.get_user(self.user1.id)
+        # self.assertEqual(self.user1, result)
+        self.assertEqual(True, False)
 #
 #     def test_get_user_no_exist_id(self):
 #         """
