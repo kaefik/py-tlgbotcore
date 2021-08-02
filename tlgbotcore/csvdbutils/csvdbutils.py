@@ -178,24 +178,28 @@ class SettingUser:
         """
         # cursor = self.connect.cursor()
 
-        id_exist = self.is_exist_user(new_user.id)
+        # TODO: реализовать метод  self.is_exist_user(new_user.id)
+        # id_exist = self.is_exist_user(new_user.id)
+        #
+        # if id_exist:  # проверка на то что пользователь с данным id есть пользователь
+        #     return False
+        data = {'id': new_user.id, 'name': new_user.name, 'active': new_user.active, 'role': new_user.role}
+        self.connect.insert_data(name_table='user', data=data)
 
-        if id_exist:  # проверка на то что пользователь с данным id есть пользователь
-            return False
+        # sqlite_insert_query_user = f"""INSERT INTO user
+        #                           (id, name, active)
+        #                           VALUES
+        #                           ({new_user.id}, '{new_user.name}', {new_user.active});"""
+        # cursor.execute(sqlite_insert_query_user)
+        #
+        # sqlite_insert_query_settings = f"""INSERT INTO settings
+        #                                   (id, role)
+        #                                   VALUES
+        #                                   ({new_user.id}, '{new_user.role}');"""
+        # cursor.execute(sqlite_insert_query_settings)
+        # self.connect.commit()
+        # cursor.close()
 
-        sqlite_insert_query_user = f"""INSERT INTO user
-                                  (id, name, active)
-                                  VALUES
-                                  ({new_user.id}, '{new_user.name}', {new_user.active});"""
-        cursor.execute(sqlite_insert_query_user)
-
-        sqlite_insert_query_settings = f"""INSERT INTO settings
-                                          (id, role)
-                                          VALUES
-                                          ({new_user.id}, '{new_user.role}');"""
-        cursor.execute(sqlite_insert_query_settings)
-        self.connect.commit()
-        cursor.close()
         return True
 
     def is_exist_user(self, idd):
@@ -258,23 +262,28 @@ class SettingUser:
         """
         result = None
 
+        all_data = self.connect.getall(name_table='user')
+
+        for el all_data:
+            pass
+
         cursor = self.connect.cursor()
         # sqlite_query_user = f"""SELECT * FROM user WHERE id={idd}"""
         # cursor.execute(sqlite_query_user)
         # result_user = cursor.fetchone()
 
-        if result_user is None:
-            return result
-
-        sqlite_query_user = f"""SELECT * FROM settings WHERE id={idd}"""
-        cursor.execute(sqlite_query_user)
-        result_settings = cursor.fetchone()
-
-        if result_settings is None:
-            return result
-
-        result = User(id=result_user[0], name=result_user[1], active=result_user[2],
-                      role=result_settings[1])
+        # if result_user is None:
+        #     return result
+        #
+        # sqlite_query_user = f"""SELECT * FROM settings WHERE id={idd}"""
+        # cursor.execute(sqlite_query_user)
+        # result_settings = cursor.fetchone()
+        #
+        # if result_settings is None:
+        #     return result
+        #
+        # result = User(id=result_user[0], name=result_user[1], active=result_user[2],
+        #               role=result_settings[1])
         return result
 
     def get_all_user(self):

@@ -55,9 +55,9 @@ class TestSettingUser(unittest.TestCase):
         """
             получение пользователя который существует
         """
-        # self.usr.add_user(self.user1)
-        # self.usr.add_user(self.user2)
-        # result = self.usr.get_user(self.user1.id)
+        self.usr.add_user(self.user1)
+        self.usr.add_user(self.user2)
+        result = self.usr.get_user(self.user1.id)
         # self.assertEqual(self.user1, result)
         self.assertEqual(True, False)
 #
