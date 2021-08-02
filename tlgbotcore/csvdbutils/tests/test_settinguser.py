@@ -7,8 +7,6 @@ import shutil
 
 from csvdbutils import User, SettingUser, Role
 
-from icecream import ic
-
 
 class TestSettingUser(unittest.TestCase):
     """
@@ -164,42 +162,34 @@ class TestSettingUser(unittest.TestCase):
         self.usr.add_user(self.user1)
         self.usr.add_user(self.user2)
 
-        result = self.usr.get_all_user()
-        # ic(len(result))
-
         user4 = User(id=self.user2.id, name='User4', active=False, role=Role.admin)
 
         self.usr.update_user(user4)
 
         result = self.usr.get_all_user()
-        # ic(str(result[0]))
-
         self.assertEqual(3, len(result))
-
         result_user = self.usr.get_user(user4.id)
-        print(f"{str(user4)}")
-        print(f"{str(result_user)}")
+        # print(f"{str(user4)}")
+        # print(f"{str(result_user)}")
         self.assertEqual(user4, result_user)
 
-#     def test_update_user_no_exist(self):
-#         """
-#             обновление информации о пользователе которого нет, то есть добавляет нового пользователя
-#         """
-#         self.usr.add_user(self.user3)
-#         self.usr.add_user(self.user1)
-#         self.usr.add_user(self.user2)
-#
-#         user4 = User(id=555555, name='User4', active=False, role=Role.admin,
-#                      typeresult=SettingOne.sound, qualityresult=SettingTwo.low)
-#
-#         self.usr.update_user(user4)
-#
-#         result = self.usr.get_all_user()
-#         self.assertEqual(4, len(result))
-#
-#         result_user = self.usr.get_user(user4.id)
-#         self.assertEqual(user4, result_user)
-#
-#
-# if __name__ == '__main__':
-#     unittest.main()
+    def test_update_user_no_exist(self):
+        """
+            обновление информации о пользователе которого нет, то есть добавляет нового пользователя
+        """
+        self.usr.add_user(self.user3)
+        self.usr.add_user(self.user1)
+        self.usr.add_user(self.user2)
+
+        user4 = User(id=555555, name='User4', active=False, role=Role.admin)
+
+        self.usr.update_user(user4)
+
+        result = self.usr.get_all_user()
+        self.assertEqual(4, len(result))
+
+        result_user = self.usr.get_user(user4.id)
+        self.assertEqual(user4, result_user)
+
+if __name__ == '__main__':
+    unittest.main()

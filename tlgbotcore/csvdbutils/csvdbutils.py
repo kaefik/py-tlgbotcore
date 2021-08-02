@@ -177,7 +177,7 @@ class SettingUser:
         """
             добавление нового пользователя new_user (тип User)
             возвращает: True - операция добавления пользователя удалась, False - ошибка при добавлении или пользователь существует
-            тест:
+            тест: ok
         """
 
         id_exist = self.is_exist_user(new_user.id)
@@ -191,7 +191,7 @@ class SettingUser:
     def is_exist_user(self, idd):
         """
             проверить есть ли БД пользователь с id
-            тест:
+            тест: ok
         """
         result = self.get_user(idd=idd)
         if result is not None:
@@ -202,7 +202,7 @@ class SettingUser:
     def del_user(self, idd):
         """
             удаление пользователя с id
-            тест:
+            тест: ok
         """
 
         all_data = self.connect.getall(name_table='user')
@@ -219,7 +219,7 @@ class SettingUser:
     def update_user(self, new_user):
         """
             обновить данные пользователя  User, если такого пользователя нет, то добавляется новый пользователь
-            тест:
+            тест: ok
         """
         # """Update sqlitedb_developers set salary = 10000 where id = 4"""
 
@@ -230,13 +230,9 @@ class SettingUser:
 
         self.__createnewdb(force=True)
 
-        print(all_data)
-
         for el in all_data:
             if int(el['id']) == new_user.id:
-                print("id == id")
-                ic(new_user.active)
-                print(new_user)
+                # ic(new_user.active)
                 self.connect.insert_data(name_table='user',
                                          data={'id': new_user.id, 'name': new_user.name, 'active': new_user.active,
                                                'role': new_user.role})
@@ -248,7 +244,7 @@ class SettingUser:
     def get_user(self, idd):
         """
             получить информацию о пользователе по id
-            тест:
+            тест: ok
         """
         result = None
 
@@ -256,7 +252,7 @@ class SettingUser:
 
         for el in all_data:
             if int(el['id']) == idd:
-                result = User(id=int(el['id']), name=el['name'], active=el['active'], role=el['role'])
+                result = User(id=int(el['id']), name=el['name'], active=eval(el['active']), role=el['role'])
                 return result
 
         return result
@@ -270,21 +266,21 @@ class SettingUser:
         all_data = self.connect.getall(name_table='user')
 
         for el in all_data:
-            usr = User(id=int(el['id']), name=el['name'], active=el['active'], role=el['role'])
+            usr = User(id=int(el['id']), name=el['name'], active=eval(el['active']), role=el['role'])
             result.append(usr)
 
         return result
 
-    def get_all_user_id(self):
-        """
-            получить все ID пользователей
-            тест: -
-        """
-        result = []
-        # users = self.get_all_user()
-        # for user in users:
-        #     result.append(user.id)
-        return result
+    # def get_all_user_id(self):
+    #     """
+    #         получить все ID пользователей
+    #         тест: -
+    #     """
+    #     result = []
+    #     # users = self.get_all_user()
+    #     # for user in users:
+    #     #     result.append(user.id)
+    #     return result
 
     def get_user_type(self, type_user):
         """
@@ -296,7 +292,7 @@ class SettingUser:
 
         all_data = self.connect.getall(name_table='user')
 
-        ic(all_data)
+        # ic(all_data)
 
         for el in all_data:
             if el['role'] == str(type_user):
@@ -326,21 +322,21 @@ class SettingUser:
         pass
 
     if __name__ == '__main__':
-        user1 = User()
-        user1.name = 'User1'
-        user1.id = 123456
-        user1.active = True
-        user1.role = Role.admin
-        # user1.typeresult = SettingOne.sound
-        # user1.qualityresult = SettingTwo.medium
+        # user1 = User()
+        # user1.name = 'User1'
+        # user1.id = 123456
+        # user1.active = True
+        # user1.role = Role.admin
+        # # user1.typeresult = SettingOne.sound
+        # # user1.qualityresult = SettingTwo.medium
+        # #
+        # user2 = User()
+        # user2.name = 'User1'
+        # user2.id = 123456
+        # user2.active = True
+        # user2.role = Role.admin
         #
-        user2 = User()
-        user2.name = 'User1'
-        user2.id = 123456
-        user2.active = True
-        user2.role = Role.admin
-
-        db = SettingUser()
+        # db = SettingUser()
 
         # user2.typeresult = SettingOne.sound
         # user2.qualityresult = SettingTwo.medium
