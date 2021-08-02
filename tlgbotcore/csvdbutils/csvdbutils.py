@@ -9,7 +9,7 @@
 import os
 from enum import Enum
 
-from csvdb.csvdb import CSVDB
+from tlgbotcore.csvdbutils.csvdb.csvdb import CSVDB
 
 from icecream import ic
 
@@ -271,16 +271,18 @@ class SettingUser:
 
         return result
 
-    # def get_all_user_id(self):
-    #     """
-    #         получить все ID пользователей
-    #         тест: -
-    #     """
-    #     result = []
-    #     # users = self.get_all_user()
-    #     # for user in users:
-    #     #     result.append(user.id)
-    #     return result
+    def get_all_user_id(self):
+        """
+            получить все ID пользователей
+            тест: -
+        """
+        result = []
+        all_data = self.connect.getall(name_table='user')
+
+        for el in all_data:
+            result.append(int(el['id']))
+
+        return result
 
     def get_user_type(self, type_user):
         """

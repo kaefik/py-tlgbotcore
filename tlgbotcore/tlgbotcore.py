@@ -11,6 +11,8 @@ import importlib.util
 import inspect
 
 
+
+
 class TlgBotCore(TelegramClient):
     def __init__(self, session, *, plugin_path="plugins", storage=None, admins=[],
                  bot_token=None, proxy_server=None, proxy_port=None, proxy_key=None, type_db='SQLITE', **kwargs):
@@ -41,8 +43,23 @@ class TlgBotCore(TelegramClient):
                 settings = SettingUser(namedb=name_file_settings)
             self.settings = settings
         elif type_db == 'CSV':
+            name_file_settings = 'settings_db'
             from tlgbotcore.csvdbutils import SettingUser, User, Role
             self._logger.info(f"БД типа CSV")
+            if not os.path.exists(name_file_settings):
+                self._logger.info('Нет файла БД настроек')
+                name_admin = ''
+                settings = SettingUser(namedb=name_file_settings)
+
+                for admin_client in admins:
+                    admin_User = User(id=admin_client, role=Role.admin, active=True)
+                    settings.add_user(admin_User)
+
+            else:
+                self._logger.info('Есть файл БД настроек!')
+                settings = SettingUser(namedb=name_file_settings)
+            self.settings = settings
+
         else:
             self._logger.info(f"Неправильный тип БД для настроек пользователя.")
             return
