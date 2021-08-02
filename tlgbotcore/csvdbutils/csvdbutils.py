@@ -11,6 +11,8 @@ from enum import Enum
 
 from csvdb.csvdb import CSVDB
 
+from icecream import ic
+
 
 # доступные роли пользователя
 class Role(Enum):
@@ -47,10 +49,11 @@ class User:
     def __init__(self, id=-1, name='', active=False, role=Role.user):
         self._id = id
         self._name = name
-        if active == 0:
-            self._active = False
-        else:
-            self._active = True
+        self._active = active
+        # if active == 0:
+        #     self._active = False
+        # else:
+        #     self._active = True
 
         # TODO: понять как из строки перевести в тип enum без бесконечных if
         if type(role) is Role:
@@ -126,7 +129,7 @@ class SettingUser:
                 force  - если True, то даже если БД существует, оно перезапишет его
         """
         self.db = namedb  # имя БД настроек бота
-        self.connect = self.__createnewdb(force)  # коннект в БД
+        self.__createnewdb(force)  # коннект в БД
 
     def open(self):
         """
@@ -176,29 +179,12 @@ class SettingUser:
             возвращает: True - операция добавления пользователя удалась, False - ошибка при добавлении или пользователь существует
             тест:
         """
-        # cursor = self.connect.cursor()
 
-        # TODO: реализовать метод  self.is_exist_user(new_user.id)
-        # id_exist = self.is_exist_user(new_user.id)
-        #
-        # if id_exist:  # проверка на то что пользователь с данным id есть пользователь
-        #     return False
+        id_exist = self.is_exist_user(new_user.id)
+        if id_exist:  # проверка на то что пользователь с данным id есть пользователь
+            return False
         data = {'id': new_user.id, 'name': new_user.name, 'active': new_user.active, 'role': new_user.role}
         self.connect.insert_data(name_table='user', data=data)
-
-        # sqlite_insert_query_user = f"""INSERT INTO user
-        #                           (id, name, active)
-        #                           VALUES
-        #                           ({new_user.id}, '{new_user.name}', {new_user.active});"""
-        # cursor.execute(sqlite_insert_query_user)
-        #
-        # sqlite_insert_query_settings = f"""INSERT INTO settings
-        #                                   (id, role)
-        #                                   VALUES
-        #                                   ({new_user.id}, '{new_user.role}');"""
-        # cursor.execute(sqlite_insert_query_settings)
-        # self.connect.commit()
-        # cursor.close()
 
         return True
 
@@ -218,16 +204,16 @@ class SettingUser:
             удаление пользователя с id
             тест:
         """
-        cursor = self.connect.cursor()
 
-        sqlite_delete_user = f"""DELETE from user where id = {idd}"""
-        cursor.execute(sqlite_delete_user)
+        all_data = self.connect.getall(name_table='user')
 
-        sqlite_delete_setting = f"""DELETE from settings where id = {idd}"""
-        cursor.execute(sqlite_delete_setting)
+        if not self.is_exist_user(idd):
+            return False
 
-        self.connect.commit()
-        cursor.close()
+        self.__createnewdb(force=True)
+        for el in all_data:
+            if not (int(el['id']) == idd):
+                self.connect.insert_data(name_table='user', data=el)
         return True
 
     def update_user(self, new_user):
@@ -240,19 +226,23 @@ class SettingUser:
         if not self.is_exist_user(new_user.id):
             self.add_user(new_user)
 
-        cursor = self.connect.cursor()
+        all_data = self.connect.getall(name_table='user')
 
-        sqlite_update_user = f"""UPDATE user SET name ='{new_user.name}',  
-                                active = {new_user.active}
-                                WHERE id={new_user.id}"""
-        cursor.execute(sqlite_update_user)
+        self.__createnewdb(force=True)
 
-        sqlite_update_settings = f"""UPDATE settings SET role = '{new_user.role}'
-                                WHERE id={new_user.id}"""
-        cursor.execute(sqlite_update_settings)
+        print(all_data)
 
-        self.connect.commit()
-        cursor.close()
+        for el in all_data:
+            if int(el['id']) == new_user.id:
+                print("id == id")
+                ic(new_user.active)
+                print(new_user)
+                self.connect.insert_data(name_table='user',
+                                         data={'id': new_user.id, 'name': new_user.name, 'active': new_user.active,
+                                               'role': new_user.role})
+            else:
+                self.connect.insert_data(name_table='user', data=el)
+
         return True
 
     def get_user(self, idd):
@@ -264,51 +254,24 @@ class SettingUser:
 
         all_data = self.connect.getall(name_table='user')
 
-        for el all_data:
-            pass
+        for el in all_data:
+            if int(el['id']) == idd:
+                result = User(id=int(el['id']), name=el['name'], active=el['active'], role=el['role'])
+                return result
 
-        cursor = self.connect.cursor()
-        # sqlite_query_user = f"""SELECT * FROM user WHERE id={idd}"""
-        # cursor.execute(sqlite_query_user)
-        # result_user = cursor.fetchone()
-
-        # if result_user is None:
-        #     return result
-        #
-        # sqlite_query_user = f"""SELECT * FROM settings WHERE id={idd}"""
-        # cursor.execute(sqlite_query_user)
-        # result_settings = cursor.fetchone()
-        #
-        # if result_settings is None:
-        #     return result
-        #
-        # result = User(id=result_user[0], name=result_user[1], active=result_user[2],
-        #               role=result_settings[1])
         return result
 
     def get_all_user(self):
         """
             получить всех пользователей
-            тест:
+            тест: ok
         """
-        # cursor = self.connect.cursor()
-        # sqlite_query_user = """SELECT * from user"""
-        # cursor.execute(sqlite_query_user)
-        # result_user = cursor.fetchall()
-        #
-        # sqlite_query_user = """SELECT * from settings"""
-        # cursor.execute(sqlite_query_user)
-        # result_settings = cursor.fetchall()
-
         result = []
+        all_data = self.connect.getall(name_table='user')
 
-        # for row in result_user:
-        #     result.append(User(id=row[0], name=row[1], active=row[2]))
-        #
-        # for i in range(0, len(result)):
-        #     for row in result_settings:
-        #         if result[i].id == row[0]:
-        #             result[i].role = row[1]
+        for el in all_data:
+            usr = User(id=int(el['id']), name=el['name'], active=el['active'], role=el['role'])
+            result.append(usr)
 
         return result
 
@@ -327,31 +290,18 @@ class SettingUser:
         """
             получение всех пользователей с типом type_user (тип Role)
             возвращает: массив пользователей, если пользователей нет, то пустой массив
-            тест:
+            тест: ok
         """
-        # result = []
-        #
-        # cursor = self.connect.cursor()
-        # sqlite_query_settings = f"""SELECT * FROM settings WHERE role='{type_user}'"""
-        # cursor.execute(sqlite_query_settings)
-        # result_setting = cursor.fetchall()
-        #
-        # if len(result_setting) == 0:
-        #     return result
-        #
-        # for row in result_setting:
-        #     idd = row[0]
-        #
-        #     sqlite_query_user = f"""SELECT * FROM user WHERE id={idd}"""
-        #     cursor.execute(sqlite_query_user)
-        #     result_user = cursor.fetchone()
-        #
-        #     if len(result_user) == 0:
-        #         continue
-        #
-        #     result.append(User(id=result_user[0], name=result_user[1], active=result_user[2],
-        #                        role=row[1]))
-        result = None
+        result = []
+
+        all_data = self.connect.getall(name_table='user')
+
+        ic(all_data)
+
+        for el in all_data:
+            if el['role'] == str(type_user):
+                usr = User(id=int(el['id']), name=el['name'], active=el['active'], role=el['role'])
+                result.append(usr)
 
         return result
 
@@ -375,32 +325,31 @@ class SettingUser:
         """
         pass
 
+    if __name__ == '__main__':
+        user1 = User()
+        user1.name = 'User1'
+        user1.id = 123456
+        user1.active = True
+        user1.role = Role.admin
+        # user1.typeresult = SettingOne.sound
+        # user1.qualityresult = SettingTwo.medium
+        #
+        user2 = User()
+        user2.name = 'User1'
+        user2.id = 123456
+        user2.active = True
+        user2.role = Role.admin
 
-if __name__ == '__main__':
-    user1 = User()
-    user1.name = 'User1'
-    user1.id = 123456
-    user1.active = True
-    user1.role = Role.admin
-    # user1.typeresult = SettingOne.sound
-    # user1.qualityresult = SettingTwo.medium
-    #
-    user2 = User()
-    user2.name = 'User1'
-    user2.id = 123456
-    user2.active = True
-    user2.role = Role.admin
+        db = SettingUser()
 
-    db = SettingUser()
+        # user2.typeresult = SettingOne.sound
+        # user2.qualityresult = SettingTwo.medium
+        # print(user1 == user2)
+        #
+        # print(ord(user2.typeresult))
 
-    # user2.typeresult = SettingOne.sound
-    # user2.qualityresult = SettingTwo.medium
-    # print(user1 == user2)
-    #
-    # print(ord(user2.typeresult))
+        # for name, member in SettingOne.__members__.items():
+        #     print(name, member)
 
-    # for name, member in SettingOne.__members__.items():
-    #     print(name, member)
-
-    # print(os.path.exists('settings_db'))
-    pass
+        # print(os.path.exists('settings_db'))
+        pass
