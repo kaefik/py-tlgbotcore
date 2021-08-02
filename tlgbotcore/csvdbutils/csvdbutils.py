@@ -310,9 +310,9 @@ class SettingUser:
             тест: -
         """
         result = []
-        # users = self.get_user_type(type_user=type_user)
-        # for user in users:
-        #     result.append(user.id)
+        users = self.get_user_type(type_user=type_user)
+        for user in users:
+            result.append(user.id)
         return result
 
     def fix_settings(self):
