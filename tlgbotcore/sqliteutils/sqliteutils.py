@@ -127,6 +127,9 @@ class SettingUser:
                 force  - если True, то даже если БД существует, оно перезапишет его
         """
         self.db = namedb  # имя БД настроек бота
+        dir_name = os.path.dirname(self.db)
+        if not os.path.exists(dir_name):
+            os.makedirs(dir_name)
         self.connect = self.__createnewdb(force)  # коннект в БД
 
     def open(self):
