@@ -31,14 +31,14 @@
 ### Библиотеки:
 
 * ```bash
-  pip3 install Telethon
+  pip install Telethon # для самого бота
+  
+  # для плагина youtube2mp3
+  apt install ffmpeg
+  pip install  requests
   ```
 
-  или просто выполняем
 
-  ```bash
-  pip install -r requirements.txt
-  ```
 
 ### Конфигурационные файлы проекта:
 
