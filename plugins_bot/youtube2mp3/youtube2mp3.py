@@ -12,7 +12,7 @@ import re
 
 from tlgbotcore.i_utils import run_cmd
 
-rexp_http_url = r"https?:\/\/(www\.)youtube.com\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)"
+rexp_http_url = r"https?:\/\/(www\.)?((youtu.be)|(youtube.com))r\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)"
 path_mp3 = "mp3"
 
 
