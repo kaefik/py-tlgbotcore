@@ -38,8 +38,6 @@
   pip install  requests
   ```
 
-
-
 ### Конфигурационные файлы проекта:
 
 * **config.py** - за основу можно взять файл config-example.py
@@ -61,8 +59,29 @@
     TYPE_DB = "SQLITE"
   ```
 
-Параметром **TYPE_DB** можно выбрать сохранять настройки с помощью sqlite3 или в файле csv (бывает полезно когда по каким-то
-причинам на устройстве нет встроенной библиотеки slite3)
+Параметром **TYPE_DB** можно выбрать сохранять настройки с помощью sqlite3 или в файле csv (бывает полезно когда по
+каким-то причинам на устройстве нет встроенной библиотеки slite3)
+
+
+## Запуск бота как сервис
+
+сохраним файл start-youtube-audio.service в папку /etc/systemd/system
+```bash
+[Unit]
+Description=Youtube video to audio
+After=network.target
+
+[Service]
+ExecStart=/bin/bash /home/scripts/youtube2mp3/start-youtube2mp3.sh
+
+[Install]
+WantedBy=default.target
+```
+Запуск сервиса
+```bash
+systemctl enable start-youtube-audio.service
+systemctl start start-youtube-audio.service
+```
 
 ## Плагины к боту
 
