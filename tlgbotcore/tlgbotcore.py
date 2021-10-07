@@ -11,8 +11,6 @@ import importlib.util
 import inspect
 
 
-
-
 class TlgBotCore(TelegramClient):
     def __init__(self, session, *, plugin_path="plugins", storage=None, admins=[],
                  bot_token=None, proxy_server=None, proxy_port=None, proxy_key=None, type_db='SQLITE', **kwargs):
@@ -95,6 +93,32 @@ class TlgBotCore(TelegramClient):
             self._logger.info(f"Нет папки с плагинами {self._plugin_path}")
             return
 
+        self.load_all_plugins()
+
+        # # получим все папки плагинов
+        # content = os.listdir(self._plugin_path)
+        #
+        # self._logger.info(content)
+        #
+        # for directory in content:
+        #     if os.path.isdir(f"{self._plugin_path}/{directory}"):
+        #         self._logger.info(f"папка плагина {directory}")
+        #         for p in Path().glob(f"{self._plugin_path}/{directory}/*.py"):
+        #             self.load_plugin_from_file(p)
+        # ------- END Загрузка плагинов бота
+
+    async def _async_init(self, **kwargs):
+        await self.start(**kwargs)
+        self.me = await self.get_me()
+        self.uid = telethon.utils.get_peer_id(self.me)
+
+    def load_plugin(self, shortname):
+        self.load_plugin_from_file(f"{self._plugin_path}/{shortname}.py")
+
+    def load_all_plugins(self):
+        """
+        загрузка всех плагинов
+        """
         # получим все папки плагинов
         content = os.listdir(self._plugin_path)
 
@@ -106,14 +130,6 @@ class TlgBotCore(TelegramClient):
                 for p in Path().glob(f"{self._plugin_path}/{directory}/*.py"):
                     self.load_plugin_from_file(p)
         # ------- END Загрузка плагинов бота
-
-    async def _async_init(self, **kwargs):
-        await self.start(**kwargs)
-        self.me = await self.get_me()
-        self.uid = telethon.utils.get_peer_id(self.me)
-
-    def load_plugin(self, shortname):
-        self.load_plugin_from_file(f"{self._plugin_path}/{shortname}.py")
 
     def load_plugin_from_file(self, path):
         path = Path(path)
