@@ -17,26 +17,18 @@
 
 Полную документацию по модулю _core смотрите файл tlbotcore/_core.md
 
-2. **youtube2mp3.py** - ютуб видео преобразует в звуковой файл формата mp3. Нужно отправить ссылку на ютуб видео.
+2. **noauthbot** - предупреждает пользователя если он не авторизован для доступа к боту.
 
-Полную документацию по модулю смотрите файл plugins_bot/youtube2mp3/youtube2mp3.md
-
-3. **noauthbot** - предупреждает пользователя если он не авторизован для доступа к боту.
-
-4. **runner_questionnaire** - интерпретатор анкет который использует json-подобный синтаксис для набора вопросов и
+3. **runner_questionnaire** - интерпретатор анкет который использует json-подобный синтаксис для набора вопросов и
    возможных ответов.
 
 ## Настройка проекта для запуска
 
 ### Библиотеки:
 
-* ```bash
+```bash
   pip install Telethon # для самого бота
-  
-  # для плагина youtube2mp3
-  apt install ffmpeg
-  pip install  requests
-  ```
+ ```
 
 ### Конфигурационные файлы проекта:
 
@@ -62,10 +54,10 @@
 Параметром **TYPE_DB** можно выбрать сохранять настройки с помощью sqlite3 или в файле csv (бывает полезно когда по
 каким-то причинам на устройстве нет встроенной библиотеки slite3)
 
-
 ## Запуск бота как сервис
 
 сохраним файл start-youtube-audio.service в папку /etc/systemd/system
+
 ```bash
 [Unit]
 Description=Youtube video to audio
@@ -77,7 +69,9 @@ ExecStart=/bin/bash /home/scripts/youtube2mp3/start-youtube2mp3.sh
 [Install]
 WantedBy=default.target
 ```
+
 Запуск сервиса
+
 ```bash
 systemctl enable start-youtube-audio.service
 systemctl start start-youtube-audio.service
