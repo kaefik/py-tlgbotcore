@@ -2,7 +2,7 @@
 .vscode/
 *.session
 settings.db
-config.py
+cfg/config_tlg.py
 mp3/
 
 # Byte-compiled / optimized / DLL files
