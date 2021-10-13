@@ -8,7 +8,7 @@ Core commands for admin users
 import asyncio
 import traceback
 
-from config import TYPE_DB
+from cfg.config_tlg import TYPE_DB
 
 if TYPE_DB == 'CSV':
     from tlgbotcore.sqliteutils import User
