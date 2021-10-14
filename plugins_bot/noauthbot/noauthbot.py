@@ -29,7 +29,7 @@ async def noauthbot_plugin(event):
     await event.reply(f'У вас нет доступа к боту. Ваш id {sender_id}. Обратитесь к администратору бота. ')
 
     # отправляет сообщение всем администраторам
-    all_admin = tlgbot.settings.get_all_user_id()
+    all_admin = tlgbot.admins
     # print(all_admin)
     for id_admin in all_admin:
         new_name_user = await get_name_user(event.client, int(id_admin))
