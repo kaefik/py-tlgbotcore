@@ -32,6 +32,7 @@ async def noauthbot_plugin(event):
     all_admin = tlgbot.admins
     # print(all_admin)
     for id_admin in all_admin:
-        new_name_user = await get_name_user(event.client, int(id_admin))
+        # new_name_user = await get_name_user(event.client, int(id_admin))
+        entry_user_admin = await event.client.get_entity(int(id_admin))
         # print(new_name_user)
-        await event.client.send_message(new_name_user, f"Пользователь с id {sender_id} пытается получить доступ")
+        await event.client.send_message(entry_user_admin, f"Пользователь с id {sender_id} пытается получить доступ")
