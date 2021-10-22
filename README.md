@@ -128,3 +128,20 @@ async def handler(event):
 ```bash
 python start_tlgbotcore.py
 ```
+
+### Запуск сервиса как docker контейнер
+
+* создание образа контейнера
+
+```buildoutcfg
+docker build -t tlgcore .  
+```
+
+* запуск
+
+```bash
+docker run --rm   -v "/home/oilnur/prj/prj-py/py-tlgbotcore/cfg/config_dairy.py:/home/app/cfg/config_dairy.py" -v "/home/oilnur/prj/prj-py/py-tlgbotcore/cfg/config_tlg.py:/home/app/cfg/config_tlg.py" -v "/home/oilnur/prj/prj-py/py-tlgbotcore/settings.db:/home/app/settings.db" tlgcore
+```
+
+
+
