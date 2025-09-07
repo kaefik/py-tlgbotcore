@@ -13,11 +13,7 @@ from ..models import User, Role
 
 from tlgbotcore.csvdbutils.csvdb.csvdb import CSVDB
 
-try:
-    from icecream import ic  # оставим как опциональный инструмент отладки
-except Exception:  # pragma: no cover
-    def ic(*args, **kwargs):
-        return None
+# icecream убран из продакшн кода - используем logging
 
 
 # безопасное преобразование значений в bool и 0/1

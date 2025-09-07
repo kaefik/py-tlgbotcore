@@ -1,6 +1,11 @@
+#!/usr/bin/env python3
+"""
+Скрипт для запуска бота в режиме разработки с отладочным логированием.
+"""
+
 from cfg import config_tlg as config
 from bot.tlgbotcore.tlgbotcore import TlgBotCore
-from bot.tlgbotcore.logging_config import setup_prod_logging
+from bot.tlgbotcore.logging_config import setup_dev_logging
 import asyncio
 
 
@@ -23,7 +28,7 @@ async def _main_async():
 
 
 def main():
-    setup_prod_logging()
+    setup_dev_logging()  # Включает DEBUG логи и icecream
     asyncio.run(_main_async())
 
 
