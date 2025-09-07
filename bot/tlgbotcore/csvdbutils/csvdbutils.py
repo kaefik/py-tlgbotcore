@@ -31,32 +31,11 @@ class Role(Enum):
     user = 2
 
 
-# --------- Здесь должны описываться настройки пользователей в виде перечислений
-# типы результата работы
-# class SettingOne(Enum):
-#     video = 1
-#     sound = 2
-#
-#
-# class SettingTwo(Enum):
-#     low = 1
-#     medium = 2
-#     high = 3
-
-
-# --------- END Здесь должны описываться настройки пользователей в виде перечислений
+# --------- Зарезервировано для пользовательских настроек (перечисления) ---------
+# Здесь могут описываться дополнительные настройки пользователей при необходимости.
 
 # данные конкретного пользователя
 class User:
-
-    def __init__(self, id=-1):
-        self._id = id
-        self._name = ''
-        self._active = False
-        self._role = Role.user
-        self._typeresult = SettingOne.sound
-        self._qualityresult = SettingTwo.medium
-
     def __init__(self, id=-1, name='', active=False, role=Role.user):
         self._id = id
         self._name = name
