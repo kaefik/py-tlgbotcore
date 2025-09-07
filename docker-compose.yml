@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  tlgbotcore:
+    build: .
+    container_name: py-tlgbotcore
+    restart: unless-stopped
+    
+    environment:
+      # Telegram API настройки (обязательные)
+      - TLG_APP_NAME=${TLG_APP_NAME}
+      - TLG_APP_API_ID=${TLG_APP_API_ID}
+      - TLG_APP_API_HASH=${TLG_APP_API_HASH}
+      - I_BOT_TOKEN=${I_BOT_TOKEN}
+      
+      # Администраторы (ID через запятую)
+      - TLG_ADMIN_ID_CLIENT=${TLG_ADMIN_ID_CLIENT}
+      
+      # Настройки БД
+      - TYPE_DB=${TYPE_DB:-SQLITE}
+      - SETTINGS_DB_PATH=/app/data/settings.db
+      
+      # Прокси (опционально)
+      - TLG_PROXY_SERVER=${TLG_PROXY_SERVER:-}
+      - TLG_PROXY_PORT=${TLG_PROXY_PORT:-}
+      - TLG_PROXY_KEY=${TLG_PROXY_KEY:-}
+    
+    volumes:
+      # Персистентное хранение данных
+      - ./data:/app/data
+      - ./logs:/app/logs
+      
+      # Опционально: кастомные плагины
+      - ./bot/plugins_bot:/app/bot/plugins_bot
+      
+      # Опционально: кастомная конфигурация
+      # - ./cfg/config_tlg.py:/app/cfg/config_tlg.py
+    
+    # Порт для потенциальных webhook'ов
+    ports:
+      - "8080:8080"
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sqlite3; conn = sqlite3.connect('/app/data/settings.db'); conn.close()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    
+    # Логирование
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# Опциональные сервисы для расширения
+networks:
+  default:
+    name: tlgbotcore-network
+
+volumes:
+  bot_data:
+    driver: local
+  bot_logs:
+    driver: local

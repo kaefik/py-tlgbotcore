@@ -1,25 +1,48 @@
-FROM ubuntu:20.04
-LABEL maintainer="ilnursoft@gmail.com"
-LABEL version="0.1"
-LABEL description="Telegram BotCore"
+FROM python:3.12-slim
 
-# Disable Prompt During Packages Installation
-ARG DEBIAN_FRONTEND=noninteractive
+LABEL maintainer="ilnursoft@gmail.com" \
+      version="0.2.0" \
+      description="Telegram Bot Core with Plugin System"
 
-ENV TZ=Europe/Moscow
-# rm -rf /var/lib/apt/lists/* - удаление кеша apt чтобы уменьшить размер образа
-RUN apt-get update && apt-get install -y python3 && apt-get install -y python3-pip && apt-get install -y  python-is-python3 && rm -rf /var/lib/apt/lists/*
+# Установка системных зависимостей
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /home/app
+# Создание пользователя для безопасности
+RUN useradd --create-home --shell /bin/bash tlgbot
 
-# установка зависимостей
-COPY install_libs.sh /home/app/install_libs.sh
-RUN /usr/bin/bash -c "/home/app/install_libs.sh"
+WORKDIR /app
 
-# копирование файлов проекта
-COPY cfg /home/app/cfg
-COPY bot/plugins_bot /home/app/bot/plugins_bot
-COPY bot/tlgbotcore /home/app/bot/tlgbotcore
-COPY bot/start_tlgbotcore.py /home/app/start_tlgbotcore.py
+# Копирование файлов зависимостей
+COPY pyproject.toml uv.lock ./
 
-ENTRYPOINT ["python", "bot/start_tlgbotcore.py"]
+# Установка uv и зависимостей
+RUN pip install uv && \
+    uv sync --frozen
+
+# Копирование исходного кода
+COPY --chown=tlgbot:tlgbot . .
+
+# Создание директорий для логов и данных
+RUN mkdir -p /app/logs /app/data && \
+    chown -R tlgbot:tlgbot /app
+
+# Переключение на непривилегированного пользователя
+USER tlgbot
+
+# Переменные окружения
+ENV PYTHONPATH=/app \
+    PYTHONUNBUFFERED=1 \
+    TYPE_DB=SQLITE \
+    SETTINGS_DB_PATH=/app/data/settings.db
+
+# Health check для проверки работоспособности бота
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import sqlite3; conn = sqlite3.connect('${SETTINGS_DB_PATH}'); conn.close()" || exit 1
+
+# Expose порт для потенциальных webhook'ов
+EXPOSE 8080
+
+# Точка входа
+ENTRYPOINT ["uv", "run", "tlgbotcore"]

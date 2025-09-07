@@ -1,2 +1,40 @@
+# Конфигурационные файлы (содержат секреты)
 cfg/config_dairy.py
 cfg/config_tlg.py
+.env
+
+# Временные файлы и кеши
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.coverage
+.pytest_cache/
+.ruff_cache/
+
+# IDE файлы
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Логи и данные
+logs/
+*.log
+settings.db
+*.session
+*.session-journal
+
+# Git и документация
+.git/
+.gitignore
+README.md
+TODO.md
+Analyze.md
+
+# Тесты и разработка
+tests/
+dev_start.py
+install_libs.sh
