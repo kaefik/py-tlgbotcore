@@ -1,109 +1,135 @@
-О проекте
+# py-tlgbotcore
 
-[py-tlgbotcore](https://github.com/kaefik/py-tlgbotcore) - Основа телеграмм бота которому можно расширять функционал с
-помощью плагинов
+[py-tlgbotcore](https://github.com/kaefik/py-tlgbotcore) - Основа Telegram бота с расширяемым функционалом через плагины.
 
-!!! **вдохновлен проектом [UniBorg](https://github.com/udf/uniborg) и взят за основу и тем самым изучая проект понимаешь
-глубже библиотеку Telethon**
+> Вдохновлён проектом [UniBorg](https://github.com/udf/uniborg) для изучения библиотеки Telethon.
 
-## Реализованные возможности:
+## Возможности
 
-* подключение плагинов которые реализуют основную функциональность бота.
+- 🔌 Система плагинов для расширения функциональности
+- 🗄️ Поддержка SQLite и CSV для хранения настроек
+- 👥 Управление правами доступа и администраторами
+- 🎨 Цветное логирование с файловым выводом
+- 🔧 Type hints и современные инструменты разработки
 
-## Плагины которые доступны:
+## Встроенные плагины
 
-1. **_core.py** - плагин, который реализует административные команды по плагинам и доступу к боту. Доступ имеет
-   администраторы.
+- **_core** - административные команды для управления плагинами и доступом
+- **noauthbot** - уведомления неавторизованным пользователям
+- **inline_button** - демонстрация inline кнопок (`/inline`)
+- **runner_questionnaire** - интерпретатор анкет с JSON-синтаксисом
+- **runner_questionnaire_inline_button** - анкеты с inline кнопками
 
-Полную документацию по модулю _core смотрите файл tlbotcore/_core.md
+## Быстрый старт
 
-2. **noauthbot** - предупреждает пользователя если он не авторизован для доступа к боту.
-
-3. **runner_questionnaire** - интерпретатор анкет который использует json-подобный синтаксис для набора вопросов и
-   возможных ответов.
-
-4. **inline_button** - демонстрация кнопок внутри сообщений и их обработчик, команда /inline
-
-5. **runner_questionnaire_inline_button** - интерпретатор анкет который использует json-подобный синтаксис для набора
-   вопросов и возможных ответов. В данной версии используются inline кнопки для выбора вариантов ответа, если тип
-   вопроса list (список)
-
-## Настройка проекта для запуска
-
-### Библиотеки:
+### 1. Установка зависимостей
 
 ```bash
-  pip install Telethon # для самого бота
- ```
+# Клонируем репозиторий
+git clone https://github.com/kaefik/py-tlgbotcore.git
+cd py-tlgbotcore
 
- или
+# Устанавливаем зависимости
+uv sync
 
- ```bash
-  uv add Telethon 
- ```
-
-
- ### Установка зависимостей проекта
-
-
-mypy и ruff для проверки кода
-
-```bash
+# Для разработки (с линтерами и тестами)
 uv sync --extra dev
 ```
 
+### 2. Настройка конфигурации
 
-Теперь можно запускать:
+Создайте `cfg/config_tlg.py` на основе `cfg/config_tlg_example.py`:
 
-uv run ruff check . - проверка кода
-uv run ruff format . - форматирование
-uv run mypy bot/ - проверка типов
+```python
+# Telegram API (получить на https://my.telegram.org)
+TLG_APP_NAME = "your_app_name"
+TLG_APP_API_ID = 12345678
+TLG_APP_API_HASH = "your_api_hash"
 
-### Конфигурационные файлы проекта:
+# Bot Token (получить у @BotFather)
+I_BOT_TOKEN = "1234567890:your_bot_token"
 
-* **cfg/config_tlg.py** - за основу можно взять файл config_tlg_example.py
+# ID администраторов
+TLG_ADMIN_ID_CLIENT = [123456789]
 
-  ```
-    # здесь указывается переменные для запуска телеграмм бота
-    TLG_APP_NAME = "tlgbotappexample"  # APP NAME get from https://my.telegram.org
-    TLG_APP_API_ID = 1258887  # APP API ID get from https://my.telegram.org
-    TLG_APP_API_HASH = "sdsadsadasd45522665f"  # APP API HASH get from https://my.telegram.org
-    I_BOT_TOKEN = "0000000000:sfdfdsfsdf5s5541sd2f1sd5"  # TOKEN Bot from BotFather
-    TLG_ADMIN_ID_CLIENT = [1258889]  # admin clients for admin telegram bot
-    # proxy for Telegram
-    TLG_PROXY_SERVER = None  # address MTProxy Telegram
-    TLG_PROXY_PORT = None  # port  MTProxy Telegram
-    TLG_PROXY_KEY = None  # secret key  MTProxy Telegram
-    # for save settings user
-    # CSV - сохранение данных настроек для доступа к боту используя БД в формате CSV
-    # SQLITE - сохранение данных настроек для доступа к боту используя БД в формате sqlite3
-    TYPE_DB = "SQLITE"
-  ```
+# Тип БД: "SQLITE" или "CSV"
+TYPE_DB = "SQLITE"
+SETTINGS_DB_PATH = "settings.db"
 
-Параметром **TYPE_DB** можно выбрать сохранять настройки с помощью sqlite3 или в файле csv (бывает полезно когда по
-каким-то причинам на устройстве нет встроенной библиотеки slite3)
+# Прокси (опционально)
+TLG_PROXY_SERVER = None
+TLG_PROXY_PORT = None
+TLG_PROXY_KEY = None
+```
 
-## Запуск бота как сервис
-
-сохраним файл start-youtube-audio.service в папку /etc/systemd/system
+### 3. Запуск
 
 ```bash
+# Продакшн режим
+uv run tlgbotcore
+
+# Режим разработки (с DEBUG логами)
+python dev_start.py
+```
+
+## Разработка
+
+### Инструменты качества кода
+
+```bash
+# Проверка кода
+uv run ruff check .
+
+# Форматирование
+uv run ruff format .
+
+# Проверка типов
+uv run mypy bot/
+
+# Запуск тестов
+uv run pytest
+```
+
+### Переменные окружения
+
+Вместо `cfg/config_tlg.py` можно использовать переменные окружения:
+
+```bash
+export TLG_APP_NAME="your_app"
+export TLG_APP_API_ID="12345678"
+export TLG_APP_API_HASH="your_hash"
+export I_BOT_TOKEN="your_token"
+export TLG_ADMIN_ID_CLIENT="123456789,987654321"
+export TYPE_DB="SQLITE"
+export SETTINGS_DB_PATH="settings.db"
+```
+
+## Развёртывание
+
+### Systemd сервис
+
+Создайте `/etc/systemd/system/tlgbotcore.service`:
+
+```ini
 [Unit]
-Description=Youtube video to audio
+Description=Telegram Bot Core
 After=network.target
 
 [Service]
-ExecStart=/bin/bash /home/scripts/youtube2mp3/start-youtube2mp3.sh
+Type=simple
+User=tlgbot
+WorkingDirectory=/opt/py-tlgbotcore
+ExecStart=/opt/py-tlgbotcore/.venv/bin/python -m bot.start_tlgbotcore
+Restart=always
+RestartSec=10
 
 [Install]
-WantedBy=default.target
+WantedBy=multi-user.target
 ```
 
-Запуск сервиса
-
 ```bash
-systemctl enable start-youtube-audio.service
-systemctl start start-youtube-audio.service
+sudo systemctl enable tlgbotcore.service
+sudo systemctl start tlgbotcore.service
 ```
 
 ## Плагины к боту
@@ -146,30 +172,47 @@ async def handler(event):
 @tlgbot.on(events.NewMessage(chats=tlgbot.settings.get_all_user_id(), pattern='hi'))
 ```
 
-### Запуск проекта:
+
+### Docker
 
 ```bash
-python bot/start_tlgbotcore.py
+# Сборка образа
+docker build -t py-tlgbotcore .
+
+# Запуск с переменными окружения
+docker run -d \
+  --name tlgbotcore \
+  --restart unless-stopped \
+  -e TLG_APP_NAME="your_app" \
+  -e TLG_APP_API_ID="12345678" \
+  -e TLG_APP_API_HASH="your_hash" \
+  -e I_BOT_TOKEN="your_token" \
+  -e TLG_ADMIN_ID_CLIENT="123456789" \
+  -v ./logs:/app/logs \
+  -v ./settings.db:/app/settings.db \
+  py-tlgbotcore
+
+# Логи
+docker logs -f tlgbotcore
 ```
 
-или
+### Docker Compose
 
-```bash
-uv run -m bot.start_tlgbotcore
-```
-
-### Запуск сервиса как docker контейнер
-
-* создание образа контейнера
-
-```buildoutcfg
-docker build -t tlgcore .  
-```
-
-* запуск
-
-```bash
-docker run --rm   -v "/home/oilnur/prj/prj-py/py-tlgbotcore/cfg/config_dairy.py:/home/app/cfg/config_dairy.py" -v "/home/oilnur/prj/prj-py/py-tlgbotcore/cfg/config_tlg.py:/home/app/cfg/config_tlg.py" -v "/home/oilnur/prj/prj-py/py-tlgbotcore/settings.db:/home/app/settings.db" tlgcore
+```yaml
+version: '3.8'
+services:
+  tlgbotcore:
+    build: .
+    restart: unless-stopped
+    environment:
+      - TLG_APP_NAME=your_app
+      - TLG_APP_API_ID=12345678
+      - TLG_APP_API_HASH=your_hash
+      - I_BOT_TOKEN=your_token
+      - TLG_ADMIN_ID_CLIENT=123456789
+    volumes:
+      - ./logs:/app/logs
+      - ./settings.db:/app/settings.db
 ```
 
 
