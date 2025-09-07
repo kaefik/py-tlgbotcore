@@ -9,7 +9,7 @@
 import os
 import sqlite3
 from enum import Enum
-from tlgbotcore.models import User, Role
+from ..models import User, Role
 
 
 

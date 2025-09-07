@@ -8,7 +8,7 @@
 
 import os
 from enum import Enum
-from tlgbotcore.models import User, Role
+from ..models import User, Role
 
 from tlgbotcore.csvdbutils.csvdb.csvdb import CSVDB
 

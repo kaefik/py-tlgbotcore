@@ -9,11 +9,7 @@ import asyncio
 import traceback
 
 from cfg.config_tlg import TYPE_DB
-
-if TYPE_DB == 'CSV':
-    from tlgbotcore.csvdbutils import User
-elif TYPE_DB == 'SQLITE':
-    from tlgbotcore.sqliteutils import User
+from bot.tlgbotcore.models import User
 
 DELETE_TIMEOUT = 2
 
