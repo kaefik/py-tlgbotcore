@@ -155,10 +155,20 @@ class TlgBotCore(TelegramClient):
 
         mod.logger = logging.getLogger(shortname)
 
-        spec.loader.exec_module(mod)
+        try:
+            spec.loader.exec_module(mod)
+        except Exception:
+            self._logger.exception(f"Failed to load plugin {shortname} from {path}")
+            return False
+
+        # health-check: проверка наличия tlgbot и хэндлеров
+        if not hasattr(mod, 'tlgbot'):
+            self._logger.error(f"Plugin {shortname} missing 'tlgbot' reference")
+            return False
 
         self._plugins[shortname] = mod
         self._logger.info(f"Successfully loaded plugin {shortname}")
+        return True
 
     async def remove_plugin(self, shortname):
         name = self._plugins[shortname].__name__
