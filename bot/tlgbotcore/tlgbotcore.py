@@ -75,29 +75,6 @@ class TlgBotCore(TelegramClient):
 
         super().__init__(session, **kwargs)
 
-        # ------- Загрузка плагинов бота
-        # This is a hack, please avert your eyes
-        # We want this in order for the most recently added handler to take
-        # precedence
-        self._event_builders = hacks.ReverseList()
-
-        if proxy_server and proxy_port and proxy_key:
-            self._logger.info(f"Trying connect with Proxy...")
-            # TODO: сделать чтобы подключался бот через прокси сервер
-            self.loop.run_until_complete(self._async_init(bot_token=bot_token))
-        else:
-            self._logger.info(f"Trying connect without Proxy...")
-            self.loop.run_until_complete(self._async_init(bot_token=bot_token))
-
-        core_plugin = Path(__file__).parent / "_core.py"
-        self.load_plugin_from_file(core_plugin)
-
-        if not os.path.exists(self._plugin_path):
-            self._logger.info(f"Нет папки с плагинами {self._plugin_path}")
-            return
-
-        self.load_all_plugins()
-
         # # получим все папки плагинов
         # content = os.listdir(self._plugin_path)
         #
@@ -122,6 +99,22 @@ class TlgBotCore(TelegramClient):
         await self.start(**kwargs)
         self.me = await self.get_me()
         self.uid = telethon.utils.get_peer_id(self.me)
+
+    async def start_core(self, bot_token=None):
+        if bot_token is None:
+            self._logger.info("Не указан параметр bot_token при запуске.")
+        # старт клиента
+        await self._async_init(bot_token=bot_token)
+        # приоритет последних хэндлеров
+        self._event_builders = hacks.ReverseList()
+        # загрузка core-плагина
+        core_plugin = Path(__file__).parent / "_core.py"
+        self.load_plugin_from_file(core_plugin)
+        # загрузка остальных плагинов
+        if not os.path.exists(self._plugin_path):
+            self._logger.info(f"Нет папки с плагинами {self._plugin_path}")
+            return
+        self.load_all_plugins()
 
     def load_plugin(self, shortname):
         self.load_plugin_from_file(f"{self._plugin_path}/{shortname}.py")

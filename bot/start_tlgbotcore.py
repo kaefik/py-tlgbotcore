@@ -1,11 +1,10 @@
 from cfg import config_tlg as config
 from bot.tlgbotcore.tlgbotcore import TlgBotCore
 from bot.tlgbotcore.logging_config import setup_logging
+import asyncio
 
 
-def main():
-    setup_logging()
-
+async def _main_async():
     tlg = TlgBotCore(session=config.TLG_APP_NAME,
                      plugin_path='bot/plugins_bot',
                      connection_retries=None,
@@ -18,7 +17,13 @@ def main():
                      proxy_port=config.TLG_PROXY_PORT,
                      type_db=config.TYPE_DB)
 
-    tlg.run_until_disconnected()
+    await tlg.start_core(bot_token=config.I_BOT_TOKEN)
+    await tlg.disconnected
+
+
+def main():
+    setup_logging()
+    asyncio.run(_main_async())
 
 
 if __name__ == "__main__":
