@@ -144,9 +144,10 @@ async def add_user_admin(event):
 
         new_name_user = await get_name_user(event.client, int(id_new_user))
 
-        print('Имя нового пользователя', new_name_user)
+        logger.info('Имя нового пользователя %s', new_name_user)
         new_user = User(id=id_new_user, active=True, name=new_name_user)
         tlgbot.settings.add_user(new_user)
+        tlgbot.refresh_admins()
         # add_new_user(id_new_user, settings)
         await conv.send_message(f"Добавили нового пользователя с ID: {id_new_user} с именем {new_name_user}")
         tlgbot.load_all_plugins()
@@ -190,6 +191,7 @@ async def del_user_admin(event):
 
         if not (int(id_del_user) in tlgbot.admins):
             tlgbot.settings.del_user(int(id_del_user))
+            tlgbot.refresh_admins()
             await conv.send_message(f"Пользователю с ID: {id_del_user} доступ к боту запрещен.")
             tlgbot.load_all_plugins()
         else:

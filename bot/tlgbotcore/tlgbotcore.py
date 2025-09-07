@@ -3,6 +3,7 @@ from telethon import TelegramClient  # , events, connection, Button
 import telethon.utils
 import telethon.events
 from . import hacks
+from .models import Role
 
 import asyncio
 import logging
@@ -108,6 +109,14 @@ class TlgBotCore(TelegramClient):
         #         for p in Path().glob(f"{self._plugin_path}/{directory}/*.py"):
         #             self.load_plugin_from_file(p)
         # ------- END Загрузка плагинов бота
+
+    def refresh_admins(self):
+        """Обновить список админов из хранилища настроек."""
+        try:
+            self.admins = self.settings.get_user_type_id(Role.admin)
+            self._logger.info(f"Обновлён список админов: {self.admins}")
+        except Exception:
+            self._logger.exception("Не удалось обновить список админов")
 
     async def _async_init(self, **kwargs):
         await self.start(**kwargs)
