@@ -1,11 +1,10 @@
 from cfg import config_tlg as config
 from bot.tlgbotcore.tlgbotcore import TlgBotCore
-
-import logging
+from bot.tlgbotcore.logging_config import setup_logging
 
 
 def main():
-    logging.basicConfig(level=logging.INFO)
+    setup_logging()
 
     tlg = TlgBotCore(session=config.TLG_APP_NAME,
                      plugin_path='bot/plugins_bot',
