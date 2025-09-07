@@ -8,6 +8,7 @@
 
 import os
 from enum import Enum
+from tlgbotcore.models import User, Role
 
 from tlgbotcore.csvdbutils.csvdb.csvdb import CSVDB
 
@@ -26,35 +27,15 @@ def _to_int_flag(value):
     return 1 if _to_bool(value) else 0
 
 # доступные роли пользователя
-class Role(Enum):
-    admin = 1
-    user = 2
+# роли берём из общих моделей
 
 
 # --------- Зарезервировано для пользовательских настроек (перечисления) ---------
 # Здесь могут описываться дополнительные настройки пользователей при необходимости.
 
 # данные конкретного пользователя
-class User:
-    def __init__(self, id=-1, name='', active=False, role=Role.user):
-        self._id = id
-        self._name = name
-        self._active = active
-        # if active == 0:
-        #     self._active = False
-        # else:
-        #     self._active = True
-
-        # TODO: понять как из строки перевести в тип enum без бесконечных if
-        if type(role) is Role:
-            self._role = role
-        elif type(role) is str:
-            if role == 'Role.admin':
-                self._role = Role.admin
-            elif role == 'Role.user':
-                self._role = Role.user
-        else:
-            self._role = Role.user
+class User(User):
+    pass
 
     @property
     def id(self):

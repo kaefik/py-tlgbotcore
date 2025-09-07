@@ -9,92 +9,10 @@
 import os
 import sqlite3
 from enum import Enum
+from tlgbotcore.models import User, Role
 
 
-# доступные роли пользователя
-class Role(Enum):
-    admin = 1
-    user = 2
 
-
-# --------- Зарезервировано для пользовательских настроек (перечисления) ---------
-# Здесь могут описываться дополнительные настройки пользователей при необходимости.
-
-# данные конкретного пользователя
-class User:
-    def __init__(self, id=-1, name='', active=False, role=Role.user):
-        # , typeresult=SettingOne.sound,
-        #          qualityresult=SettingTwo.medium):
-        self._id = id
-        self._name = name
-        if active == 0:
-            self._active = False
-        else:
-            self._active = True
-
-        # TODO: понять как из строки перевести в тип enum без бесконечных if
-        if type(role) is Role:
-            self._role = role
-        elif type(role) is str:
-            if role == 'Role.admin':
-                self._role = Role.admin
-            elif role == 'Role.user':
-                self._role = Role.user
-        else:
-            self._role = Role.user
-
-    @property
-    def id(self):
-        return self._id
-
-    @id.setter
-    def id(self, my_id):
-        self._id = my_id
-
-    @property
-    def name(self):
-        return self._name
-
-    @name.setter
-    def name(self, new_name):
-        self._name = new_name
-
-    @property
-    def active(self):
-        return self._active
-
-    @active.setter
-    def active(self, flag):
-        if flag == 0:
-            self._active = False
-        else:
-            self._active = True
-
-    @property
-    def role(self):
-        return self._role
-
-    @role.setter
-    def role(self, new_role):
-        # проверить соответствует ли new_role классу Role
-        if type(new_role) is Role:
-            self._role = new_role
-        elif type(new_role) is str:
-            if new_role == 'Role.admin':
-                self._role = Role.admin
-            elif new_role == 'Role.user':
-                self._role = Role.user
-
-    def __str__(self):
-        return f"User -> id: {self.id}\t{type(self.id)}\n\tname: {self.name}\t{type(self.name)}\n\t" \
-               f"active: {self.active}\t{type(self.active)}\n\t" \
-               f"role: {self.role}\t{type(self.role)}\n\t\n"
-
-    def __eq__(self, other):
-        if (self.id == other.id) and (self.name == other.name) and (self.active == other.active) \
-                and (self.role is other.role):
-            return True
-        return False
 
 
 class SettingUser:
