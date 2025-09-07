@@ -103,79 +103,127 @@ class TlgBotCore(TelegramClient):
             self._logger.exception("Не удалось обновить список админов")
 
     async def _async_init(self, **kwargs: Any) -> None:
-        await self.start(**kwargs)
-        self.me = await self.get_me()
-        self.uid = telethon.utils.get_peer_id(self.me)
+        """Асинхронная инициализация клиента."""
+        try:
+            await self.start(**kwargs)
+            self.me = await self.get_me()
+            self.uid = telethon.utils.get_peer_id(self.me)
+            self._logger.info(f"Клиент инициализирован: {self.me.username or self.me.first_name}")
+        except Exception as exc:
+            self._logger.exception("Ошибка при инициализации клиента: %s", exc)
+            raise
 
     async def start_core(self, bot_token: Optional[str] = None) -> None:
+        """Асинхронный запуск ядра бота с инициализацией и загрузкой плагинов."""
         if bot_token is None:
-            self._logger.info("Не указан параметр bot_token при запуске.")
-        # старт клиента
-        await self._async_init(bot_token=bot_token)
-        # приоритет последних хэндлеров
-        self._event_builders = hacks.ReverseList()
-        # загрузка core-плагина
-        core_plugin = Path(__file__).parent / "_core.py"
-        self.load_plugin_from_file(core_plugin)
-        # загрузка остальных плагинов
-        if not os.path.exists(self._plugin_path):
-            self._logger.info(f"Нет папки с плагинами {self._plugin_path}")
-            return
-        self.load_all_plugins()
+            self._logger.warning("Не указан параметр bot_token при запуске.")
+        
+        try:
+            # старт клиента
+            await self._async_init(bot_token=bot_token)
+            
+            # приоритет последних хэндлеров
+            self._event_builders = hacks.ReverseList()
+            
+            # загрузка core-плагина
+            core_plugin = Path(__file__).parent / "_core.py"
+            if not self.load_plugin_from_file(core_plugin):
+                self._logger.error("Не удалось загрузить core плагин")
+                return
+            
+            # загрузка остальных плагинов
+            if not os.path.exists(self._plugin_path):
+                self._logger.warning(f"Нет папки с плагинами {self._plugin_path}")
+                return
+            
+            self.load_all_plugins()
+            self._logger.info("Ядро бота успешно запущено")
+            
+        except Exception as exc:
+            self._logger.exception("Критическая ошибка при запуске ядра: %s", exc)
+            raise
 
     def load_plugin(self, shortname: str) -> None:
         self.load_plugin_from_file(f"{self._plugin_path}/{shortname}.py")
 
     def load_all_plugins(self) -> None:
-        """
-        загрузка всех плагинов
-        """
-        # получим все папки плагинов
-        content = os.listdir(self._plugin_path)
-
-        self._logger.info(content)
-
-        for directory in content:
-            if os.path.isdir(f"{self._plugin_path}/{directory}"):
-                self._logger.info(f"папка плагина {directory}")
-                for p in Path().glob(f"{self._plugin_path}/{directory}/*.py"):
-                    self.load_plugin_from_file(p)
-        # ------- END Загрузка плагинов бота
+        """Загрузка всех плагинов из папок."""
+        try:
+            # получим все папки плагинов
+            content = os.listdir(self._plugin_path)
+            self._logger.info(f"Найдены директории: {content}")
+            
+            loaded_count = 0
+            failed_count = 0
+            
+            for directory in content:
+                dir_path = f"{self._plugin_path}/{directory}"
+                if os.path.isdir(dir_path):
+                    self._logger.info(f"Загружаем плагины из папки: {directory}")
+                    for plugin_file in Path().glob(f"{dir_path}/*.py"):
+                        if self.load_plugin_from_file(plugin_file):
+                            loaded_count += 1
+                        else:
+                            failed_count += 1
+            
+            self._logger.info(f"Загрузка плагинов завершена: {loaded_count} успешно, {failed_count} с ошибками")
+            
+        except Exception as exc:
+            self._logger.exception("Ошибка при загрузке плагинов: %s", exc)
 
     def load_plugin_from_file(self, path: Union[str, Path]) -> bool:
+        """Загрузка плагина из файла с улучшенной обработкой ошибок."""
         path = Path(path)
         shortname = path.stem
-        name = f"_TlgBotCorePlugins.{self._name}.{shortname}"
-
-        spec = importlib.util.spec_from_file_location(name, path)
-        if spec is None or spec.loader is None:
-            self._logger.error(f"Failed to create spec for {path}")
+        
+        # Пропускаем системные файлы
+        if shortname.startswith('__') or shortname.startswith('.'):
+            return True
+        
+        # Запрещаем перезагрузку _core плагина
+        if shortname == '_core' and shortname in self._plugins:
+            self._logger.warning("Перезагрузка _core плагина запрещена")
             return False
-        mod = importlib.util.module_from_spec(spec)
-
-        # Добавляем атрибуты в модуль динамически
-        setattr(mod, 'tlgbot', self)  # поле tlgbot отвечает за то как нужно будет указываться файлах плагинов
-        # декоратор, см. например _core.py
-        setattr(mod, 'logger', logging.getLogger(shortname))
-
+        
+        name = f"_TlgBotCorePlugins.{self._name}.{shortname}"
+        
         try:
+            spec = importlib.util.spec_from_file_location(name, path)
+            if spec is None or spec.loader is None:
+                self._logger.error(f"Не удалось создать spec для {path}")
+                return False
+                
+            mod = importlib.util.module_from_spec(spec)
+            
+            # Добавляем атрибуты в модуль динамически
+            setattr(mod, 'tlgbot', self)
+            setattr(mod, 'logger', logging.getLogger(shortname))
+            
+            # Загружаем модуль
             if spec.loader is not None:
                 spec.loader.exec_module(mod)
             else:
-                self._logger.error(f"No loader for {shortname}")
-                return False  # pragma: no cover
-        except Exception:
-            self._logger.exception(f"Failed to load plugin {shortname} from {path}")
+                self._logger.error(f"Нет загрузчика для {shortname}")
+                return False
+            
+            # Health-check: проверка наличия tlgbot
+            if not hasattr(mod, 'tlgbot'):
+                self._logger.error(f"Плагин {shortname} не содержит 'tlgbot' ссылку")
+                return False
+            
+            self._plugins[shortname] = mod
+            self._logger.info(f"Плагин {shortname} успешно загружен")
+            return True
+            
+        except ImportError as exc:
+            self._logger.error(f"Ошибка импорта плагина {shortname}: {exc}")
             return False
-
-        # health-check: проверка наличия tlgbot и хэндлеров
-        if not hasattr(mod, 'tlgbot'):
-            self._logger.error(f"Plugin {shortname} missing 'tlgbot' reference")
+        except SyntaxError as exc:
+            self._logger.error(f"Синтаксическая ошибка в плагине {shortname}: {exc}")
             return False
-
-        self._plugins[shortname] = mod
-        self._logger.info(f"Successfully loaded plugin {shortname}")
-        return True
+        except Exception as exc:
+            self._logger.exception(f"Неожиданная ошибка при загрузке плагина {shortname} из {path}: {exc}")
+            return False
 
     async def remove_plugin(self, shortname: str) -> None:
         name = self._plugins[shortname].__name__
