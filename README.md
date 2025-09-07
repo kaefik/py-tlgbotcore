@@ -36,6 +36,13 @@
   pip install Telethon # для самого бота
  ```
 
+ или
+
+ ```bash
+  uv add Telethon 
+ ```
+
+
 ### Конфигурационные файлы проекта:
 
 * **cfg/config_tlg.py** - за основу можно взять файл config_tlg_example.py
@@ -126,7 +133,13 @@ async def handler(event):
 ### Запуск проекта:
 
 ```bash
-python start_tlgbotcore.py
+python bot/start_tlgbotcore.py
+```
+
+или
+
+```bash
+uv run bot/start_tlgbotcore.py
 ```
 
 ### Запуск сервиса как docker контейнер
