@@ -208,17 +208,15 @@ class SettingUser:
         if id_exist:  # проверка на то что пользователь с данным id есть пользователь
             return False
 
-        sqlite_insert_query_user = f"""INSERT INTO user
-                                  (id, name, active)
-                                  VALUES
-                                  ({new_user.id}, '{new_user.name}', {new_user.active});"""
-        cursor.execute(sqlite_insert_query_user)
+        cursor.execute(
+            "INSERT INTO user (id, name, active) VALUES (?, ?, ?)",
+            (new_user.id, new_user.name, int(new_user.active)),
+        )
 
-        sqlite_insert_query_settings = f"""INSERT INTO settings
-                                          (id, role)
-                                          VALUES
-                                          ({new_user.id}, '{new_user.role}');"""
-        cursor.execute(sqlite_insert_query_settings)
+        cursor.execute(
+            "INSERT INTO settings (id, role) VALUES (?, ?)",
+            (new_user.id, str(new_user.role)),
+        )
         self.connect.commit()
         cursor.close()
         return True
@@ -241,11 +239,8 @@ class SettingUser:
         """
         cursor = self.connect.cursor()
 
-        sqlite_delete_user = f"""DELETE from user where id = {idd}"""
-        cursor.execute(sqlite_delete_user)
-
-        sqlite_delete_setting = f"""DELETE from settings where id = {idd}"""
-        cursor.execute(sqlite_delete_setting)
+        cursor.execute("DELETE FROM user WHERE id = ?", (idd,))
+        cursor.execute("DELETE FROM settings WHERE id = ?", (idd,))
 
         self.connect.commit()
         cursor.close()
@@ -263,14 +258,15 @@ class SettingUser:
 
         cursor = self.connect.cursor()
 
-        sqlite_update_user = f"""UPDATE user SET name ='{new_user.name}',  
-                                active = {new_user.active}
-                                WHERE id={new_user.id}"""
-        cursor.execute(sqlite_update_user)
+        cursor.execute(
+            "UPDATE user SET name = ?, active = ? WHERE id = ?",
+            (new_user.name, int(new_user.active), new_user.id),
+        )
 
-        sqlite_update_settings = f"""UPDATE settings SET role = '{new_user.role}'
-                                WHERE id={new_user.id}"""
-        cursor.execute(sqlite_update_settings)
+        cursor.execute(
+            "UPDATE settings SET role = ? WHERE id = ?",
+            (str(new_user.role), new_user.id),
+        )
 
         self.connect.commit()
         cursor.close()
@@ -284,15 +280,13 @@ class SettingUser:
         result = None
 
         cursor = self.connect.cursor()
-        sqlite_query_user = f"""SELECT * FROM user WHERE id={idd}"""
-        cursor.execute(sqlite_query_user)
+        cursor.execute("SELECT * FROM user WHERE id = ?", (idd,))
         result_user = cursor.fetchone()
 
         if result_user is None:
             return result
 
-        sqlite_query_user = f"""SELECT * FROM settings WHERE id={idd}"""
-        cursor.execute(sqlite_query_user)
+        cursor.execute("SELECT * FROM settings WHERE id = ?", (idd,))
         result_settings = cursor.fetchone()
 
         if result_settings is None:
@@ -348,8 +342,7 @@ class SettingUser:
         result = []
 
         cursor = self.connect.cursor()
-        sqlite_query_settings = f"""SELECT * FROM settings WHERE role='{type_user}'"""
-        cursor.execute(sqlite_query_settings)
+        cursor.execute("SELECT * FROM settings WHERE role = ?", (str(type_user),))
         result_setting = cursor.fetchall()
 
         if len(result_setting) == 0:
@@ -358,8 +351,7 @@ class SettingUser:
         for row in result_setting:
             idd = row[0]
 
-            sqlite_query_user = f"""SELECT * FROM user WHERE id={idd}"""
-            cursor.execute(sqlite_query_user)
+            cursor.execute("SELECT * FROM user WHERE id = ?", (idd,))
             result_user = cursor.fetchone()
 
             if len(result_user) == 0:
