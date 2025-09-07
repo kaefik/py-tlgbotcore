@@ -139,7 +139,7 @@ python bot/start_tlgbotcore.py
 или
 
 ```bash
-uv run bot/start_tlgbotcore.py
+uv run -m bot.start_tlgbotcore
 ```
 
 ### Запуск сервиса как docker контейнер
