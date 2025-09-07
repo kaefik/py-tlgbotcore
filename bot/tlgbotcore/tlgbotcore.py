@@ -14,7 +14,7 @@ import inspect
 
 class TlgBotCore(TelegramClient):
     def __init__(self, session, *, plugin_path="plugins", storage=None, admins=[],
-                 bot_token=None, proxy_server=None, proxy_port=None, proxy_key=None, type_db='SQLITE', **kwargs):
+                 bot_token=None, proxy_server=None, proxy_port=None, proxy_key=None, type_db='SQLITE', settings_db_path='settings.db', **kwargs):
         self._logger = logging.getLogger(session)
         self._name = session
         self._plugins = {}
@@ -28,7 +28,7 @@ class TlgBotCore(TelegramClient):
         if type_db == 'SQLITE':
             from .sqliteutils import SettingUser
             from .models import User, Role
-            name_file_settings = 'settings.db'
+            name_file_settings = settings_db_path
             if not os.path.exists(name_file_settings):
                 self._logger.info('Нет файла БД настроек')
                 name_admin = ''

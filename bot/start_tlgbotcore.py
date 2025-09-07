@@ -15,7 +15,8 @@ async def _main_async():
                      proxy_key=config.TLG_PROXY_KEY,
                      proxy_server=config.TLG_PROXY_SERVER,
                      proxy_port=config.TLG_PROXY_PORT,
-                     type_db=config.TYPE_DB)
+                     type_db=config.TYPE_DB,
+                     settings_db_path=config.SETTINGS_DB_PATH)
 
     await tlg.start_core(bot_token=config.I_BOT_TOKEN)
     await tlg.disconnected

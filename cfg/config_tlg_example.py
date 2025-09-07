@@ -14,3 +14,6 @@ TLG_PROXY_KEY = None  # secret key  MTProxy Telegram
 # CSV - сохранение данных настроек для доступа к боту используя БД в формате CSV
 # SQLITE - сохранение данных настроек для доступа к боту используя БД в формате sqlite3
 TYPE_DB = "SQLITE"
+
+# путь для БД настроек бота
+SETTINGS_DB_PATH = "settings.db"  # путь к файлу БД настроек
