@@ -14,7 +14,7 @@ def string_escape(s, encoding="utf-8"):
     import codecs
     byte_s = bytes(s, encoding)
     res = codecs.escape_decode(byte_s)[0]
-    res = res.decode(encoding)
+    res = res.decode(encoding) if isinstance(res, bytes) else str(res)
     return res
 
 

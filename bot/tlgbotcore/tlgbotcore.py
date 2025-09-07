@@ -1,4 +1,5 @@
 import os
+from typing import Optional, List, Dict, Any, Union
 from telethon import TelegramClient  # , events, connection, Button
 import telethon.utils
 import telethon.events
@@ -13,11 +14,11 @@ import inspect
 
 
 class TlgBotCore(TelegramClient):
-    def __init__(self, session, *, plugin_path="plugins", storage=None, admins=[],
-                 bot_token=None, proxy_server=None, proxy_port=None, proxy_key=None, type_db='SQLITE', settings_db_path='settings.db', **kwargs):
+    def __init__(self, session: str, *, plugin_path: str = "plugins", storage: Optional[Any] = None, admins: List[int] = [],
+                 bot_token: Optional[str] = None, proxy_server: Optional[str] = None, proxy_port: Optional[int] = None, proxy_key: Optional[str] = None, type_db: str = 'SQLITE', settings_db_path: str = 'settings.db', **kwargs: Any) -> None:
         self._logger = logging.getLogger(session)
         self._name = session
-        self._plugins = {}
+        self._plugins: Dict[str, Any] = {}
         self._plugin_path = plugin_path
         # self.admins = admins
 
@@ -44,7 +45,7 @@ class TlgBotCore(TelegramClient):
             self.settings = settings
         elif type_db == 'CSV':
             name_file_settings = 'settings_db'
-            from .csvdbutils import SettingUser
+            from .csvdbutils.csvdbutils import SettingUser
             from .models import User, Role
             self._logger.info(f"БД типа CSV")
             if not os.path.exists(name_file_settings):
@@ -66,7 +67,10 @@ class TlgBotCore(TelegramClient):
             return
 
         # получение всех пользователей из БД
-        self.admins = self.settings.get_user_type_id(Role.admin)  # список администраторов бота
+        if self.settings is not None:
+            self.admins = self.settings.get_user_type_id(Role.admin)  # список администраторов бота
+        else:
+            self.admins = []
         self._logger.info(f"Админы ботов {self.admins}")
         # END настройки бота
 
@@ -87,20 +91,23 @@ class TlgBotCore(TelegramClient):
         #             self.load_plugin_from_file(p)
         # ------- END Загрузка плагинов бота
 
-    def refresh_admins(self):
+    def refresh_admins(self) -> None:
         """Обновить список админов из хранилища настроек."""
         try:
-            self.admins = self.settings.get_user_type_id(Role.admin)
-            self._logger.info(f"Обновлён список админов: {self.admins}")
+            if self.settings is not None:
+                self.admins = self.settings.get_user_type_id(Role.admin)
+                self._logger.info(f"Обновлён список админов: {self.admins}")
+            else:
+                self.admins = []
         except Exception:
             self._logger.exception("Не удалось обновить список админов")
 
-    async def _async_init(self, **kwargs):
+    async def _async_init(self, **kwargs: Any) -> None:
         await self.start(**kwargs)
         self.me = await self.get_me()
         self.uid = telethon.utils.get_peer_id(self.me)
 
-    async def start_core(self, bot_token=None):
+    async def start_core(self, bot_token: Optional[str] = None) -> None:
         if bot_token is None:
             self._logger.info("Не указан параметр bot_token при запуске.")
         # старт клиента
@@ -116,10 +123,10 @@ class TlgBotCore(TelegramClient):
             return
         self.load_all_plugins()
 
-    def load_plugin(self, shortname):
+    def load_plugin(self, shortname: str) -> None:
         self.load_plugin_from_file(f"{self._plugin_path}/{shortname}.py")
 
-    def load_all_plugins(self):
+    def load_all_plugins(self) -> None:
         """
         загрузка всех плагинов
         """
@@ -135,21 +142,28 @@ class TlgBotCore(TelegramClient):
                     self.load_plugin_from_file(p)
         # ------- END Загрузка плагинов бота
 
-    def load_plugin_from_file(self, path):
+    def load_plugin_from_file(self, path: Union[str, Path]) -> bool:
         path = Path(path)
         shortname = path.stem
         name = f"_TlgBotCorePlugins.{self._name}.{shortname}"
 
         spec = importlib.util.spec_from_file_location(name, path)
+        if spec is None or spec.loader is None:
+            self._logger.error(f"Failed to create spec for {path}")
+            return False
         mod = importlib.util.module_from_spec(spec)
 
-        mod.tlgbot = self  # поле tlgbot отвечает за то как нужно будет указываться файлах плагинов
+        # Добавляем атрибуты в модуль динамически
+        setattr(mod, 'tlgbot', self)  # поле tlgbot отвечает за то как нужно будет указываться файлах плагинов
         # декоратор, см. например _core.py
-
-        mod.logger = logging.getLogger(shortname)
+        setattr(mod, 'logger', logging.getLogger(shortname))
 
         try:
-            spec.loader.exec_module(mod)
+            if spec.loader is not None:
+                spec.loader.exec_module(mod)
+            else:
+                self._logger.error(f"No loader for {shortname}")
+                return False  # pragma: no cover
         except Exception:
             self._logger.exception(f"Failed to load plugin {shortname} from {path}")
             return False
@@ -163,7 +177,7 @@ class TlgBotCore(TelegramClient):
         self._logger.info(f"Successfully loaded plugin {shortname}")
         return True
 
-    async def remove_plugin(self, shortname):
+    async def remove_plugin(self, shortname: str) -> None:
         name = self._plugins[shortname].__name__
 
         for i in reversed(range(len(self._event_builders))):
@@ -183,8 +197,8 @@ class TlgBotCore(TelegramClient):
         del plugin
         self._logger.info(f"Removed plugin {shortname}")
 
-    def await_event(self, event_matcher, filter=None):
-        fut = asyncio.Future()
+    def await_event(self, event_matcher: Any, filter: Optional[Any] = None) -> asyncio.Future[Any]:
+        fut: asyncio.Future[Any] = asyncio.Future()
 
         @self.on(event_matcher)
         async def cb(event):
@@ -200,7 +214,7 @@ class TlgBotCore(TelegramClient):
 
         return fut
 
-    def cmd(self, command, pattern=None, admin_only=False):
+    def cmd(self, command: str, pattern: Optional[str] = None, admin_only: bool = False) -> telethon.events.NewMessage:
         if self.me.bot:
             command = fr'{command}(?:@{self.me.username})?'
 
@@ -226,5 +240,5 @@ class TlgBotCore(TelegramClient):
             pattern=pattern
         )
 
-    def admin_cmd(self, command, pattern=None):
+    def admin_cmd(self, command: str, pattern: Optional[str] = None) -> telethon.events.NewMessage:
         return self.cmd(command, pattern, admin_only=True)

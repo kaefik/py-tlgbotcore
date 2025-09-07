@@ -43,6 +43,22 @@
  ```
 
 
+ ### Установка зависимостей проекта
+
+
+mypy и ruff для проверки кода
+
+```bash
+uv sync --extra dev
+```
+
+
+Теперь можно запускать:
+
+uv run ruff check . - проверка кода
+uv run ruff format . - форматирование
+uv run mypy bot/ - проверка типов
+
 ### Конфигурационные файлы проекта:
 
 * **cfg/config_tlg.py** - за основу можно взять файл config_tlg_example.py

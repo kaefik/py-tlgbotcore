@@ -1,3 +1,4 @@
+from typing import Union, Any
 from enum import Enum
 
 
@@ -8,7 +9,7 @@ class Role(Enum):
 
 class User:
 
-    def __init__(self, id: int = -1, name: str = '', active: bool = False, role: Role | str = Role.user):
+    def __init__(self, id: int = -1, name: str = '', active: bool = False, role: Union[Role, str] = Role.user) -> None:
         self._id = id
         self._name = name
         self._active = bool(active)
@@ -23,7 +24,7 @@ class User:
             else:
                 self._role = Role.user
         else:
-            self._role = Role.user
+            self._role = Role.user  # pragma: no cover
 
     @property
     def id(self) -> int:
@@ -46,7 +47,7 @@ class User:
         return self._active
 
     @active.setter
-    def active(self, flag) -> None:
+    def active(self, flag: Any) -> None:
         self._active = bool(flag)
 
     @property
@@ -54,7 +55,7 @@ class User:
         return self._role
 
     @role.setter
-    def role(self, new_role: Role | str) -> None:
+    def role(self, new_role: Union[Role, str]) -> None:
         if isinstance(new_role, Role):
             self._role = new_role
         elif isinstance(new_role, str):
@@ -69,7 +70,7 @@ class User:
             f"active: {self.active}\t{type(self.active)}\n\trole: {self.role}\t{type(self.role)}\n\t\n"
         )
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Any) -> bool:
         if not isinstance(other, User):
             return False
         return (

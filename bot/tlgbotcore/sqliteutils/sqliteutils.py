@@ -8,6 +8,7 @@
 
 import os
 import sqlite3
+from typing import Optional, List, Union
 from enum import Enum
 from ..models import User, Role
 
@@ -17,7 +18,7 @@ from ..models import User, Role
 
 class SettingUser:
 
-    def __init__(self, namedb='settings.db', force=False):
+    def __init__(self, namedb: str = 'settings.db', force: bool = False) -> None:
         """
             инициализация БД настроек бота
                 namedb - название БД
@@ -30,7 +31,7 @@ class SettingUser:
                 os.makedirs(dir_name)
         self.connect = self.__createnewdb(force)  # коннект в БД
 
-    def open(self):
+    def open(self) -> bool:
         """
             открыть файл настроек
         """
@@ -42,14 +43,14 @@ class SettingUser:
         finally:
             return True
 
-    def close(self):
+    def close(self) -> None:
         """
             закрытие подключения к БД
         """
-        if not (self.connect is None):
+        if self.connect is not None:
             self.connect.close()
 
-    def __createnewdb(self, force=False):
+    def __createnewdb(self, force: bool = False) -> sqlite3.Connection:
         """
             создание БД настроек бота
             возвращает True, если операция создания успешно.
@@ -88,11 +89,11 @@ class SettingUser:
                """)
         except sqlite3.Error as error:
             print("Ошибка при подключении к sqlite", error)
-            return False
+            raise
 
         return connect
 
-    def add_user(self, new_user):
+    def add_user(self, new_user: User) -> bool:
         """
             добавление нового пользователя new_user (тип User)
             возвращает: True - операция добавления пользователя удалась, False - ошибка при добавлении или пользователь существует
@@ -118,7 +119,7 @@ class SettingUser:
         cursor.close()
         return True
 
-    def is_exist_user(self, idd):
+    def is_exist_user(self, idd: int) -> bool:
         """
             проверить есть ли БД пользователь с id
             тест: есть
@@ -129,7 +130,7 @@ class SettingUser:
         else:
             return False
 
-    def del_user(self, idd):
+    def del_user(self, idd: int) -> bool:
         """
             удаление пользователя с id
             тест: есть
@@ -143,7 +144,7 @@ class SettingUser:
         cursor.close()
         return True
 
-    def update_user(self, new_user):
+    def update_user(self, new_user: User) -> bool:
         """
             обновить данные пользователя  User, если такого пользователя нет, то добавляется новый пользователь
             тест: есть
@@ -169,7 +170,7 @@ class SettingUser:
         cursor.close()
         return True
 
-    def get_user(self, idd):
+    def get_user(self, idd: int) -> Optional[User]:
         """
             получить информацию о пользователе по id
             тест: есть
@@ -193,7 +194,7 @@ class SettingUser:
                       role=result_settings[1])
         return result
 
-    def get_all_user(self):
+    def get_all_user(self) -> List[User]:
         """
             получить всех пользователей
             тест: есть
@@ -219,7 +220,7 @@ class SettingUser:
 
         return result
 
-    def get_all_user_id(self):
+    def get_all_user_id(self) -> List[int]:
         """
             получить все ID пользователей
             тест: -
@@ -230,13 +231,13 @@ class SettingUser:
             result.append(user.id)
         return result
 
-    def get_user_type(self, type_user):
+    def get_user_type(self, type_user: Role) -> List[User]:
         """
             получение всех пользователей с типом type_user (тип Role)
             возвращает: массив пользователей, если пользователей нет, то пустой массив
             тест: есть
         """
-        result = []
+        result: List[User] = []
 
         cursor = self.connect.cursor()
         cursor.execute("SELECT * FROM settings WHERE role = ?", (str(type_user),))
@@ -259,7 +260,7 @@ class SettingUser:
 
         return result
 
-    def get_user_type_id(self, type_user):
+    def get_user_type_id(self, type_user: Role) -> List[int]:
         """
             получение всех пользователей  ID с типом type_user (тип Role)
             возвращает: массив пользователей, если пользователей нет, то пустой массив
@@ -271,7 +272,7 @@ class SettingUser:
             result.append(user.id)
         return result
 
-    def fix_settings(self):
+    def fix_settings(self) -> None:
         """
             починка БД настроек пользователя,
             например каким-то образом информация о пользователе есть только в одной таблице
