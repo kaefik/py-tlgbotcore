@@ -18,8 +18,8 @@ RUN /usr/bin/bash -c "/home/app/install_libs.sh"
 
 # копирование файлов проекта
 COPY cfg /home/app/cfg
-COPY plugins_bot /home/app/plugins_bot
-COPY tlgbotcore /home/app/tlgbotcore
-COPY start_tlgbotcore.py /home/app/start_tlgbotcore.py
+COPY bot/plugins_bot /home/app/bot/plugins_bot
+COPY bot/tlgbotcore /home/app/bot/tlgbotcore
+COPY bot/start_tlgbotcore.py /home/app/start_tlgbotcore.py
 
-ENTRYPOINT ["python", "start_tlgbotcore.py"]
+ENTRYPOINT ["python", "bot/start_tlgbotcore.py"]
