@@ -14,6 +14,17 @@ from tlgbotcore.csvdbutils.csvdb.csvdb import CSVDB
 from icecream import ic
 
 
+# безопасное преобразование значений в bool и 0/1
+def _to_bool(value):
+    if isinstance(value, bool):
+        return value
+    s = str(value).strip().lower()
+    return s in ("1", "true", "yes", "y", "on")
+
+
+def _to_int_flag(value):
+    return 1 if _to_bool(value) else 0
+
 # доступные роли пользователя
 class Role(Enum):
     admin = 1
@@ -183,7 +194,12 @@ class SettingUser:
         id_exist = self.is_exist_user(new_user.id)
         if id_exist:  # проверка на то что пользователь с данным id есть пользователь
             return False
-        data = {'id': new_user.id, 'name': new_user.name, 'active': new_user.active, 'role': new_user.role}
+        data = {
+            'id': new_user.id,
+            'name': new_user.name,
+            'active': _to_int_flag(new_user.active),
+            'role': str(new_user.role),
+        }
         self.connect.insert_data(name_table='user', data=data)
 
         return True
@@ -233,9 +249,15 @@ class SettingUser:
         for el in all_data:
             if int(el['id']) == new_user.id:
                 # ic(new_user.active)
-                self.connect.insert_data(name_table='user',
-                                         data={'id': new_user.id, 'name': new_user.name, 'active': new_user.active,
-                                               'role': new_user.role})
+                self.connect.insert_data(
+                    name_table='user',
+                    data={
+                        'id': new_user.id,
+                        'name': new_user.name,
+                        'active': _to_int_flag(new_user.active),
+                        'role': str(new_user.role),
+                    },
+                )
             else:
                 self.connect.insert_data(name_table='user', data=el)
 
@@ -252,7 +274,12 @@ class SettingUser:
 
         for el in all_data:
             if int(el['id']) == idd:
-                result = User(id=int(el['id']), name=el['name'], active=eval(el['active']), role=el['role'])
+                result = User(
+                    id=int(el['id']),
+                    name=el['name'],
+                    active=_to_bool(el['active']),
+                    role=el['role'],
+                )
                 return result
 
         return result
@@ -266,7 +293,12 @@ class SettingUser:
         all_data = self.connect.getall(name_table='user')
 
         for el in all_data:
-            usr = User(id=int(el['id']), name=el['name'], active=eval(el['active']), role=el['role'])
+            usr = User(
+                id=int(el['id']),
+                name=el['name'],
+                active=_to_bool(el['active']),
+                role=el['role'],
+            )
             result.append(usr)
 
         return result
@@ -298,7 +330,12 @@ class SettingUser:
 
         for el in all_data:
             if el['role'] == str(type_user):
-                usr = User(id=int(el['id']), name=el['name'], active=el['active'], role=el['role'])
+                usr = User(
+                    id=int(el['id']),
+                    name=el['name'],
+                    active=_to_bool(el['active']),
+                    role=el['role'],
+                )
                 result.append(usr)
 
         return result
