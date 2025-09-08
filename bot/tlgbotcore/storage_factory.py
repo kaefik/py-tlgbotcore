@@ -1,0 +1,36 @@
+"""Фабрика для создания хранилищ настроек."""
+
+import os
+import logging
+from typing import Any
+from .di_container import ISettingsStorage
+from .models import User, Role
+
+
+class StorageFactory:
+    """Фабрика для создания хранилищ по типу БД."""
+    
+    @staticmethod
+    def create_storage(type_db: str, db_path: str, admins: list[int]) -> ISettingsStorage:
+        """Создание хранилища по типу БД."""
+        logger = logging.getLogger(__name__)
+        
+        if type_db == 'SQLITE':
+            from .sqliteutils import SettingUser
+            storage = SettingUser(namedb=db_path)
+            
+        elif type_db == 'CSV':
+            from .csvdbutils.csvdbutils import SettingUser
+            storage = SettingUser(namedb=db_path)
+            
+        else:
+            raise ValueError(f"Неподдерживаемый тип БД: {type_db}")
+        
+        # Инициализация админов если БД новая
+        if not os.path.exists(db_path):
+            logger.info('Создаём новую БД настроек')
+            for admin_id in admins:
+                admin_user = User(id=admin_id, role=Role.admin, active=True)
+                storage.add_user(admin_user)
+        
+        return storage
