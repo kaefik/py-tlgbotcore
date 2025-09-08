@@ -1,22 +1,45 @@
 from cfg import config_tlg as config
-from bot.tlgbotcore.tlgbotcore import TlgBotCore
+from bot.tlgbotcore.di_container import DIContainer, BotFactory, IConfig, ISettingsStorage
+from bot.tlgbotcore.storage_factory import StorageFactory
 from bot.tlgbotcore.logging_config import setup_prod_logging
 import asyncio
 
 
+class ConfigAdapter:
+    """Адаптер для существующего конфига."""
+    
+    def __init__(self, config_module):
+        self.TLG_APP_NAME = config_module.TLG_APP_NAME
+        self.TLG_APP_API_ID = config_module.TLG_APP_API_ID
+        self.TLG_APP_API_HASH = config_module.TLG_APP_API_HASH
+        self.I_BOT_TOKEN = config_module.I_BOT_TOKEN
+        self.TLG_ADMIN_ID_CLIENT = config_module.TLG_ADMIN_ID_CLIENT
+        self.TYPE_DB = config_module.TYPE_DB
+        self.SETTINGS_DB_PATH = config_module.SETTINGS_DB_PATH
+
+
 async def _main_async():
-    tlg = TlgBotCore(session=config.TLG_APP_NAME,
-                     plugin_path='bot/plugins_bot',
-                     connection_retries=None,
-                     api_id=config.TLG_APP_API_ID,
-                     api_hash=config.TLG_APP_API_HASH,
-                     bot_token=config.I_BOT_TOKEN,
-                     admins=config.TLG_ADMIN_ID_CLIENT,
-                     proxy_key=config.TLG_PROXY_KEY,
-                     proxy_server=config.TLG_PROXY_SERVER,
-                     proxy_port=config.TLG_PROXY_PORT,
-                     type_db=config.TYPE_DB,
-                     settings_db_path=config.SETTINGS_DB_PATH)
+    # Настройка DI-контейнера
+    container = DIContainer()
+    
+    # Регистрация конфига
+    config_adapter = ConfigAdapter(config)
+    container.register_instance(IConfig, config_adapter)
+    
+    
+    # Регистрация хранилища через фабрику
+    def create_storage():
+        return StorageFactory.create_storage(
+            config_adapter.TYPE_DB,
+            config_adapter.SETTINGS_DB_PATH,
+            config_adapter.TLG_ADMIN_ID_CLIENT
+        )
+    
+    container.register_factory(ISettingsStorage, create_storage)
+    
+    # Создание бота через фабрику
+    bot_factory = BotFactory(container)
+    tlg = bot_factory.create_bot()
 
     await tlg.start_core(bot_token=config.I_BOT_TOKEN)
     await tlg.disconnected

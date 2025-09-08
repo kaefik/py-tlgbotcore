@@ -8,7 +8,7 @@ from telethon import events
 import json
 
 
-@tlgbot.on(events.NewMessage(chats=tlgbot.settings.get_all_user_id(), pattern='anketa'))
+@tlgbot.on(tlgbot.admin_cmd('anketa'))
 async def handler(event):
     types_answer_message = {"int": "число", "string": "строка",
                             "float": "число с плавающей точкой", "list": "список ответов"}

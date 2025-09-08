@@ -13,7 +13,7 @@ button_main_cmd = [
 ]
 
 
-@tlgbot.on(events.NewMessage(chats=tlgbot.settings.get_all_user_id(), pattern='/inline'))
+@tlgbot.on(tlgbot.admin_cmd('inline'))
 async def start_cmd_plugin(event):
     await event.respond("Выбери ", buttons=button_main_cmd)
     # answer = await event.wait_event(events.CallbackQuery())

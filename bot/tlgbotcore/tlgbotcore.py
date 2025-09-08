@@ -14,63 +14,22 @@ import inspect
 
 
 class TlgBotCore(TelegramClient):
-    def __init__(self, session: str, *, plugin_path: str = "plugins", storage: Optional[Any] = None, admins: List[int] = [],
-                 bot_token: Optional[str] = None, proxy_server: Optional[str] = None, proxy_port: Optional[int] = None, proxy_key: Optional[str] = None, type_db: str = 'SQLITE', settings_db_path: str = 'settings.db', **kwargs: Any) -> None:
+    def __init__(self, session: str, *, plugin_path: str = "plugins", settings_storage: Optional[Any] = None, admins: List[int] = [],
+                 bot_token: Optional[str] = None, proxy_server: Optional[str] = None, proxy_port: Optional[int] = None, proxy_key: Optional[str] = None, **kwargs: Any) -> None:
         self._logger = logging.getLogger(session)
         self._name = session
         self._plugins: Dict[str, Any] = {}
         self._plugin_path = plugin_path
-        # self.admins = admins
-
-        self._logger.info(type_db)
-        self.settings = None
-
-        # настройки пользователей бота в том числе и администратора admin_client
-        if type_db == 'SQLITE':
-            from .sqliteutils import SettingUser
-            from .models import User, Role
-            name_file_settings = settings_db_path
-            if not os.path.exists(name_file_settings):
-                self._logger.info('Нет файла БД настроек')
-                name_admin = ''
-                settings = SettingUser(namedb=name_file_settings)
-
-                for admin_client in admins:
-                    admin_User = User(id=admin_client, role=Role.admin, active=True)
-                    settings.add_user(admin_User)
-
-            else:
-                self._logger.info('Есть файл БД настроек!')
-                settings = SettingUser(namedb=name_file_settings)
-            self.settings = settings
-        elif type_db == 'CSV':
-            name_file_settings = 'settings_db'
-            from .csvdbutils.csvdbutils import SettingUser
-            from .models import User, Role
-            self._logger.info(f"БД типа CSV")
-            if not os.path.exists(name_file_settings):
-                self._logger.info('Нет файла БД настроек')
-                name_admin = ''
-                settings = SettingUser(namedb=name_file_settings)
-
-                for admin_client in admins:
-                    admin_User = User(id=admin_client, role=Role.admin, active=True)
-                    settings.add_user(admin_User)
-
-            else:
-                self._logger.info('Есть файл БД настроек!')
-                settings = SettingUser(namedb=name_file_settings)
-            self.settings = settings
-
-        else:
-            self._logger.info(f"Неправильный тип БД для настроек пользователя.")
-            return
-
+        
+        # Внедрение зависимости хранилища настроек
+        self.settings = settings_storage
+        
         # получение всех пользователей из БД
         if self.settings is not None:
+            from .models import Role
             self.admins = self.settings.get_user_type_id(Role.admin)  # список администраторов бота
         else:
-            self.admins = []
+            self.admins = admins  # fallback к переданным админам
         self._logger.info(f"Админы ботов {self.admins}")
         # END настройки бота
 

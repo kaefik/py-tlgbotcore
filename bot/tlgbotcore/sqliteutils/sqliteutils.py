@@ -240,7 +240,10 @@ class SettingUser:
         result: List[User] = []
 
         cursor = self.connect.cursor()
-        cursor.execute("SELECT * FROM settings WHERE role = ?", (str(type_user),))
+        # Поддерживаем оба формата: 'admin' и 'Role.admin'
+        role_str = str(type_user)
+        role_name = type_user.name  # 'admin' для Role.admin
+        cursor.execute("SELECT * FROM settings WHERE role = ? OR role = ?", (role_str, role_name))
         result_setting = cursor.fetchall()
 
         if len(result_setting) == 0:

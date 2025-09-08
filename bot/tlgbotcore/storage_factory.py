@@ -26,11 +26,15 @@ class StorageFactory:
         else:
             raise ValueError(f"Неподдерживаемый тип БД: {type_db}")
         
-        # Инициализация админов если БД новая
-        if not os.path.exists(db_path):
-            logger.info('Создаём новую БД настроек')
+        # Инициализация админов если БД новая или нет админов
+        existing_admins = storage.get_user_type_id(Role.admin)
+        if not os.path.exists(db_path) or len(existing_admins) == 0:
+            logger.info(f'Создаём/дополняем БД настроек с админами: {admins}')
             for admin_id in admins:
-                admin_user = User(id=admin_id, role=Role.admin, active=True)
-                storage.add_user(admin_user)
+                if admin_id not in existing_admins:
+                    admin_user = User(id=admin_id, role=Role.admin, active=True)
+                    storage.add_user(admin_user)
+        else:
+            logger.info(f'БД существует с админами: {existing_admins}, переданные: {admins}')
         
         return storage

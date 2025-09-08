@@ -13,7 +13,7 @@ def press_event(user_id):
     return events.CallbackQuery(func=lambda e: e.data.decode("utf-8"))
 
 
-@tlgbot.on(events.NewMessage(chats=tlgbot.settings.get_all_user_id(), pattern='/anketa_button'))
+@tlgbot.on(tlgbot.admin_cmd('anketa_button'))
 async def run_quest_inline(event):
     types_answer_message = {"int": "число", "string": "строка",
                             "float": "число с плавающей точкой", "list": "список ответов"}
