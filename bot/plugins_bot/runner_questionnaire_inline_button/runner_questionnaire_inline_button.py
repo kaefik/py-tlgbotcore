@@ -19,7 +19,7 @@ async def run_quest_inline(event):
                             "float": "число с плавающей точкой", "list": "список ответов"}
     result_data = {}
 
-    with open("plugins_bot/runner_questionnaire_inline_button/example.json") as f:
+    with open("bot/plugins_bot/runner_questionnaire_inline_button/example.json") as f:
         all_question_json = f.read()
 
     all_question = json.loads(all_question_json)
