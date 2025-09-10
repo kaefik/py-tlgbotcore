@@ -153,7 +153,7 @@ async def add_user_admin(event):
         tlgbot.load_all_plugins()
 
 
-@tlgbot.on(tlgbot.admin_cmd("infouser"))
+@tlgbot.on(tlgbot.admin_cmd("listusers"))
 async def info_user_admin(event):
     """
     вывод информации о пользователях которые имеют доступ к боту
