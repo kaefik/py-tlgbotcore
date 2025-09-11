@@ -4,6 +4,7 @@
 
 from telethon import events, Button
 
+
 # кнопки команд
 button_main_cmd = [
     [Button.text("команда1"),
@@ -13,6 +14,6 @@ button_main_cmd = [
 ]
 
 
-@tlgbot.on(tlgbot.admin_cmd('start'))
+@tlgbot.on(tlgbot.cmd('start'))
 async def start_cmd_plugin(event):
     await event.respond("Привет! жми на команды и получай получай информацию!", buttons=button_main_cmd)
