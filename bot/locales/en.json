@@ -1,0 +1,4 @@
+{
+    "greeting": "Hello!",
+    "no_access": "You have no access to the bot. Your id is {user_id}. Contact the administrator."
+}
