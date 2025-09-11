@@ -9,10 +9,11 @@ class Role(Enum):
 
 class User:
 
-    def __init__(self, id: int = -1, name: str = '', active: bool = False, role: Union[Role, str] = Role.user) -> None:
+    def __init__(self, id: int = -1, name: str = '', active: bool = False, role: Union[Role, str] = Role.user, lang: str = "ru") -> None:
         self._id = id
         self._name = name
         self._active = bool(active)
+        self._lang = lang  # поле языка
 
         if isinstance(role, Role):
             self._role = role
@@ -63,6 +64,16 @@ class User:
                 self._role = Role.admin
             elif new_role == 'Role.user' or new_role == 'user':
                 self._role = Role.user
+
+    @property
+    def lang(self) -> str:
+        """Получить язык пользователя"""
+        return self._lang
+
+    @lang.setter
+    def lang(self, value: str) -> None:
+        """Установить язык пользователя"""
+        self._lang = value
 
     def __str__(self) -> str:
         return (
