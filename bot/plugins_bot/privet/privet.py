@@ -1,13 +1,12 @@
 """
-Example plugin for tlgbotcore (send hi) with i18n support
+Example plugin for tlgbotcore (send hi) with i18n support and default language fallback
 """
 
 from telethon import events
 
 @tlgbot.on(tlgbot.cmd('hi'))
 async def handler(event):
-    # Получаем язык пользователя (по умолчанию "ru" если не найден)
     user = tlgbot.settings.get_user(event.sender_id)
-    lang = getattr(user, "lang", "ru")
-    # Используем локализацию через tlgbot.i18n
+    # Получаем язык пользователя, если не задан — используем язык по умолчанию из i18n
+    lang = getattr(user, "lang", tlgbot.i18n.default_lang)
     await event.reply(tlgbot.i18n.t("greeting", lang=lang))

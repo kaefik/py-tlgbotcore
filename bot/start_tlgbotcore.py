@@ -28,7 +28,7 @@ async def _main_async():
     container.register_instance(IConfig, config_adapter)
     
     # Регистрация i18n (глобально или через DI)
-    i18n = I18n(locales_path="bot/locales", default_lang="ru")
+    i18n = I18n(locales_path="bot/locales", default_lang=config.DEFAULT_LANG)
     container.register_instance(I18n, i18n)
     
     # Регистрация хранилища через фабрику

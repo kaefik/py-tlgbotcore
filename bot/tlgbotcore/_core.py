@@ -8,6 +8,7 @@ Core commands for admin users
 import asyncio
 import traceback
 
+from cfg import config_tlg  # Добавьте импорт конфига для доступа к DEFAULT_LANG
 from cfg.config_tlg import TYPE_DB
 from bot.tlgbotcore.models import User
 
@@ -119,36 +120,35 @@ async def remove(event):
 
 # команды работы с БД пользователей
 @tlgbot.on(tlgbot.admin_cmd("adduser"))
-# @bot.on(events.NewMessage(chats=allow_user_id(settings.get_all_user()), pattern='/AddUser'))
 async def add_user_admin(event):
     """
     добавление активного пользователя с ролью обычного пользователя , по возможности получаем имя пользователя
     :return:
     """
-    # sender = await event.get_sender()
     await event.respond("Выполняется команда /adduser")
-    # диалог с запросом информации нужной для работы команды /AddUser
     chat_id = event.chat_id
     async with tlgbot.conversation(chat_id) as conv:
-        # response = conv.wait_event(events.NewMessage(incoming=True))
         await conv.send_message("Привет! Введите номер id пользователя"
                                 "который нужно добавить для доступа к боту:")
         id_new_user = await conv.get_response()
         id_new_user = id_new_user.message
-        # print("id_new_user ", id_new_user)
         while not all(x.isdigit() for x in id_new_user):
             await conv.send_message("ID нового пользователя - это число. Попробуйте еще раз.")
             id_new_user = await conv.get_response()
             id_new_user = id_new_user.message
-        # print("id_new_user ", id_new_user)
 
         new_name_user = await get_name_user(event.client, int(id_new_user))
 
         logger.info('Имя нового пользователя %s', new_name_user)
-        new_user = User(id=id_new_user, active=True, name=new_name_user)
+        # Указываем язык по умолчанию из конфига
+        new_user = User(
+            id=id_new_user,
+            active=True,
+            name=new_name_user,
+            lang=getattr(config_tlg, "DEFAULT_LANG", "ru")
+        )
         tlgbot.settings.add_user(new_user)
         tlgbot.refresh_admins()
-        # add_new_user(id_new_user, settings)
         await conv.send_message(f"Добавили нового пользователя с ID: {id_new_user} с именем {new_name_user}")
         await tlgbot.load_all_plugins()
 

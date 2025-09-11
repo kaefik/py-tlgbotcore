@@ -11,6 +11,7 @@ import sqlite3
 from typing import Optional, List, Union
 from enum import Enum
 from ..models import User, Role
+from cfg import config_tlg as config  # Добавьте импорт конфига для доступа к DEFAULT_LANG
 
 
 
@@ -105,9 +106,17 @@ class SettingUser:
         if id_exist:
             return False
 
+
+
+        # Используем язык по умолчанию из конфига, если не задан явно
+        lang = getattr(new_user, "lang", None) or getattr(config, "DEFAULT_LANG", "ru")
+
+        print(f"{config.DEFAULT_LANG=}")
+        print(f"Добавление пользователя {new_user.id} с языком {lang}")
+
         cursor.execute(
             "INSERT INTO user (id, name, active, lang) VALUES (?, ?, ?, ?)",
-            (new_user.id, new_user.name, int(new_user.active), getattr(new_user, "lang", "ru")),
+            (new_user.id, new_user.name, int(new_user.active), lang),
         )
 
         cursor.execute(
@@ -152,9 +161,12 @@ class SettingUser:
 
         cursor = self.connect.cursor()
 
+        # Используем язык по умолчанию из конфига, если не задан явно
+        lang = getattr(new_user, "lang", None) or getattr(config, "DEFAULT_LANG", "ru")
+
         cursor.execute(
             "UPDATE user SET name = ?, active = ?, lang = ? WHERE id = ?",
-            (new_user.name, int(new_user.active), getattr(new_user, "lang", "ru"), new_user.id),
+            (new_user.name, int(new_user.active), lang, new_user.id),
         )
 
         cursor.execute(
@@ -186,12 +198,13 @@ class SettingUser:
             return result
 
         # result_user: (id, name, active, lang)
+        lang = result_user[3] if len(result_user) > 3 and result_user[3] else getattr(config, "DEFAULT_LANG", "ru")
         result = User(
             id=result_user[0],
             name=result_user[1],
             active=result_user[2],
             role=result_settings[1],
-            lang=result_user[3] if len(result_user) > 3 and result_user[3] else "ru"
+            lang=lang
         )
         return result
 
@@ -209,7 +222,8 @@ class SettingUser:
         result = []
         # result_user: (id, name, active, lang)
         for row in result_user:
-            result.append(User(id=row[0], name=row[1], active=row[2], lang=row[3] if len(row) > 3 and row[3] else "ru"))
+            lang = row[3] if len(row) > 3 and row[3] else getattr(config, "DEFAULT_LANG", "ru")
+            result.append(User(id=row[0], name=row[1], active=row[2], lang=lang))
 
         for i in range(0, len(result)):
             for row in result_settings:

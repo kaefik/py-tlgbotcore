@@ -34,8 +34,10 @@ async def setlang_callback_handler(event):
         )
         return
 
-    user.lang = lang_code
-    tlgbot.settings.update_user(user)  # исправлено
+    # Если по какой-то причине lang_code не задан, используем язык по умолчанию из конфига
+    from cfg import config_tlg
+    user.lang = lang_code or getattr(config_tlg, "DEFAULT_LANG", "ru")
+    tlgbot.settings.update_user(user)  # используйте update_user для обновления существующего пользователя
     await event.edit(
-        tlgbot.i18n.t("lang_changed", lang=lang_code, lang_name=AVAILABLE_LANGS[lang_code])
+        tlgbot.i18n.t("lang_changed", lang=user.lang, lang_name=AVAILABLE_LANGS[user.lang])
     )
