@@ -239,7 +239,7 @@ class TlgBotCore(TelegramClient):
         if self.me.bot and admin_only:
             allowed_users = self.admins
         else:
-            allowed_users = None
+            allowed_users = self.settings.get_all_user_id() if self.settings is not None else []
 
         return telethon.events.NewMessage(
             outgoing=not self.me.bot,
