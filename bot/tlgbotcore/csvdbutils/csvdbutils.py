@@ -140,8 +140,9 @@ class SettingUser:
                 name - имя пользователя text
                 active - если 0, пользователь неактивный, иначе пользователь активный (тип: INTEGER)
                 role - роль пользователя: admin - администратор бота, user - обычный пользователь бота (тип: text)
+                lang - язык пользователя (text)
         """
-        headers_user = ['id', 'name', 'active', 'role']
+        headers_user = ['id', 'name', 'active', 'role', 'lang']
         self.connect.create_table(name_table='user', colums=headers_user)
 
         return True
@@ -161,6 +162,7 @@ class SettingUser:
             'name': new_user.name,
             'active': _to_int_flag(new_user.active),
             'role': str(new_user.role),
+            'lang': getattr(new_user, "lang", "ru"),
         }
         self.connect.insert_data(name_table='user', data=data)
 
@@ -199,8 +201,6 @@ class SettingUser:
             обновить данные пользователя  User, если такого пользователя нет, то добавляется новый пользователь
             тест: ok
         """
-        # """Update sqlitedb_developers set salary = 10000 where id = 4"""
-
         if not self.is_exist_user(new_user.id):
             self.add_user(new_user)
 
@@ -210,7 +210,6 @@ class SettingUser:
 
         for el in all_data:
             if int(el['id']) == new_user.id:
-                # ic(new_user.active)
                 self.connect.insert_data(
                     name_table='user',
                     data={
@@ -218,6 +217,7 @@ class SettingUser:
                         'name': new_user.name,
                         'active': _to_int_flag(new_user.active),
                         'role': str(new_user.role),
+                        'lang': getattr(new_user, "lang", "ru"),
                     },
                 )
             else:
@@ -241,6 +241,7 @@ class SettingUser:
                     name=el['name'],
                     active=_to_bool(el['active']),
                     role=el['role'],
+                    lang=el['lang'] if 'lang' in el and el['lang'] else "ru"
                 )
                 return result
 
@@ -260,6 +261,7 @@ class SettingUser:
                 name=el['name'],
                 active=_to_bool(el['active']),
                 role=el['role'],
+                lang=el['lang'] if 'lang' in el and el['lang'] else "ru"
             )
             result.append(usr)
 
