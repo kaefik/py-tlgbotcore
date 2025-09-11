@@ -10,6 +10,7 @@ import os
 from typing import Optional, List, Union, Any
 from enum import Enum
 from ..models import User, Role
+from cfg import config_tlg  # Добавьте импорт конфига для доступа к DEFAULT_LANG
 
 from tlgbotcore.csvdbutils.csvdb.csvdb import CSVDB
 
@@ -162,7 +163,7 @@ class SettingUser:
             'name': new_user.name,
             'active': _to_int_flag(new_user.active),
             'role': str(new_user.role),
-            'lang': getattr(new_user, "lang", "ru"),
+            'lang': getattr(new_user, "lang", None) or getattr(config_tlg, "DEFAULT_LANG", "ru"),
         }
         self.connect.insert_data(name_table='user', data=data)
 
@@ -217,7 +218,7 @@ class SettingUser:
                         'name': new_user.name,
                         'active': _to_int_flag(new_user.active),
                         'role': str(new_user.role),
-                        'lang': getattr(new_user, "lang", "ru"),
+                        'lang': getattr(new_user, "lang", None) or getattr(config_tlg, "DEFAULT_LANG", "ru"),
                     },
                 )
             else:
@@ -241,7 +242,7 @@ class SettingUser:
                     name=el['name'],
                     active=_to_bool(el['active']),
                     role=el['role'],
-                    lang=el['lang'] if 'lang' in el and el['lang'] else "ru"
+                    lang=el['lang'] if 'lang' in el and el['lang'] else getattr(config_tlg, "DEFAULT_LANG", "ru")
                 )
                 return result
 
@@ -261,7 +262,7 @@ class SettingUser:
                 name=el['name'],
                 active=_to_bool(el['active']),
                 role=el['role'],
-                lang=el['lang'] if 'lang' in el and el['lang'] else "ru"
+                lang=el['lang'] if 'lang' in el and el['lang'] else getattr(config_tlg, "DEFAULT_LANG", "ru")
             )
             result.append(usr)
 
