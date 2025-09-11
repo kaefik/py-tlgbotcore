@@ -95,7 +95,7 @@ class TlgBotCore(TelegramClient):
                 self._logger.warning(f"Нет папки с плагинами {self._plugin_path}")
                 return
             
-            self.load_all_plugins()
+            await self.load_all_plugins()
             self._logger.info("Ядро бота успешно запущено")
             
         except Exception as exc:
@@ -105,16 +105,21 @@ class TlgBotCore(TelegramClient):
     def load_plugin(self, shortname: str) -> None:
         self.load_plugin_from_file(f"{self._plugin_path}/{shortname}.py")
 
-    def load_all_plugins(self) -> None:
-        """Загрузка всех плагинов из папок."""
+    async def load_all_plugins(self) -> None:
+        """Загрузка всех плагинов из папок с удалением старых обработчиков."""
         try:
+            # Удаляем все старые плагины (кроме _core)
+            for shortname in list(self._plugins.keys()):
+                if shortname != "_core":
+                    await self.remove_plugin(shortname)
+
             # получим все папки плагинов
             content = os.listdir(self._plugin_path)
             self._logger.info(f"Найдены директории: {content}")
-            
+
             loaded_count = 0
             failed_count = 0
-            
+
             for directory in content:
                 dir_path = f"{self._plugin_path}/{directory}"
                 if os.path.isdir(dir_path):
@@ -124,9 +129,9 @@ class TlgBotCore(TelegramClient):
                             loaded_count += 1
                         else:
                             failed_count += 1
-            
+
             self._logger.info(f"Загрузка плагинов завершена: {loaded_count} успешно, {failed_count} с ошибками")
-            
+
         except Exception as exc:
             self._logger.exception("Ошибка при загрузке плагинов: %s", exc)
 
@@ -236,15 +241,23 @@ class TlgBotCore(TelegramClient):
             pattern = fr'^\/{pattern}'
         pattern = fr'(?i){pattern}$'
 
-        if self.me.bot and admin_only:
-            allowed_users = self.admins
-        else:
-            allowed_users = self.settings.get_all_user_id() if self.settings is not None else []
+        # Динамический фильтр доступа
+        async def access_filter(event):
+            user_id = event.sender_id
+            if admin_only:
+                allowed = user_id in (self.admins if self.settings is None else self.settings.get_user_type_id(Role.admin))
+            else:
+                allowed = user_id in (self.settings.get_all_user_id() if self.settings is not None else [])
+            if not allowed:
+                await event.reply("Нет доступа к этой команде.")
+            return allowed
+
+        self._logger.debug(f"cmd: pattern={pattern}, admin_only={admin_only}")
 
         return telethon.events.NewMessage(
             outgoing=not self.me.bot,
-            from_users=allowed_users,
-            pattern=pattern
+            pattern=pattern,
+            func=access_filter  # <-- динамическая проверка
         )
 
     def admin_cmd(self, command: str, pattern: Optional[str] = None) -> telethon.events.NewMessage:
