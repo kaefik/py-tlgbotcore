@@ -75,7 +75,7 @@ class SettingUser:
                     active - если 0, пользователь неактивный, иначе пользователь активный
             """
             cursor.execute("""CREATE TABLE user 
-                      (id INTEGER, name text, active INTEGER)
+                (id INTEGER, name text, active INTEGER, lang text)
                    """)
 
             """
@@ -97,18 +97,17 @@ class SettingUser:
         """
             добавление нового пользователя new_user (тип User)
             возвращает: True - операция добавления пользователя удалась, False - ошибка при добавлении или пользователь существует
-            тест: есть
         """
         cursor = self.connect.cursor()
 
         id_exist = self.is_exist_user(new_user.id)
 
-        if id_exist:  # проверка на то что пользователь с данным id есть пользователь
+        if id_exist:
             return False
 
         cursor.execute(
-            "INSERT INTO user (id, name, active) VALUES (?, ?, ?)",
-            (new_user.id, new_user.name, int(new_user.active)),
+            "INSERT INTO user (id, name, active, lang) VALUES (?, ?, ?, ?)",
+            (new_user.id, new_user.name, int(new_user.active), getattr(new_user, "lang", "ru")),
         )
 
         cursor.execute(
@@ -146,19 +145,16 @@ class SettingUser:
 
     def update_user(self, new_user: User) -> bool:
         """
-            обновить данные пользователя  User, если такого пользователя нет, то добавляется новый пользователь
-            тест: есть
+            обновить данные пользователя User, если такого пользователя нет, то добавляется новый пользователь
         """
-        # """Update sqlitedb_developers set salary = 10000 where id = 4"""
-
         if not self.is_exist_user(new_user.id):
             self.add_user(new_user)
 
         cursor = self.connect.cursor()
 
         cursor.execute(
-            "UPDATE user SET name = ?, active = ? WHERE id = ?",
-            (new_user.name, int(new_user.active), new_user.id),
+            "UPDATE user SET name = ?, active = ?, lang = ? WHERE id = ?",
+            (new_user.name, int(new_user.active), getattr(new_user, "lang", "ru"), new_user.id),
         )
 
         cursor.execute(
@@ -173,7 +169,6 @@ class SettingUser:
     def get_user(self, idd: int) -> Optional[User]:
         """
             получить информацию о пользователе по id
-            тест: есть
         """
         result = None
 
@@ -190,28 +185,31 @@ class SettingUser:
         if result_settings is None:
             return result
 
-        result = User(id=result_user[0], name=result_user[1], active=result_user[2],
-                      role=result_settings[1])
+        # result_user: (id, name, active, lang)
+        result = User(
+            id=result_user[0],
+            name=result_user[1],
+            active=result_user[2],
+            role=result_settings[1],
+            lang=result_user[3] if len(result_user) > 3 and result_user[3] else "ru"
+        )
         return result
 
     def get_all_user(self) -> List[User]:
         """
             получить всех пользователей
-            тест: есть
         """
         cursor = self.connect.cursor()
-        sqlite_query_user = """SELECT * from user"""
-        cursor.execute(sqlite_query_user)
+        cursor.execute("SELECT * from user")
         result_user = cursor.fetchall()
 
-        sqlite_query_user = """SELECT * from settings"""
-        cursor.execute(sqlite_query_user)
+        cursor.execute("SELECT * from settings")
         result_settings = cursor.fetchall()
 
         result = []
-
+        # result_user: (id, name, active, lang)
         for row in result_user:
-            result.append(User(id=row[0], name=row[1], active=row[2]))
+            result.append(User(id=row[0], name=row[1], active=row[2], lang=row[3] if len(row) > 3 and row[3] else "ru"))
 
         for i in range(0, len(result)):
             for row in result_settings:
