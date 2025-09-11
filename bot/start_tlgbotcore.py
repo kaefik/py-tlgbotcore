@@ -2,6 +2,7 @@ from cfg import config_tlg as config
 from bot.tlgbotcore.di_container import DIContainer, BotFactory, IConfig, ISettingsStorage
 from bot.tlgbotcore.storage_factory import StorageFactory
 from bot.tlgbotcore.logging_config import setup_prod_logging
+from bot.tlgbotcore.i18n import I18n
 import asyncio
 
 
@@ -26,6 +27,9 @@ async def _main_async():
     config_adapter = ConfigAdapter(config)
     container.register_instance(IConfig, config_adapter)
     
+    # Регистрация i18n (глобально или через DI)
+    i18n = I18n(locales_path="bot/locales", default_lang="ru")
+    container.register_instance(I18n, i18n)
     
     # Регистрация хранилища через фабрику
     def create_storage():
@@ -40,6 +44,9 @@ async def _main_async():
     # Создание бота через фабрику
     bot_factory = BotFactory(container)
     tlg = bot_factory.create_bot()
+
+    # Делаем i18n глобально доступным для плагинов (например, через атрибут бота)
+    tlg.i18n = i18n
 
     await tlg.start_core(bot_token=config.I_BOT_TOKEN)
     await tlg.disconnected
