@@ -249,7 +249,9 @@ class TlgBotCore(TelegramClient):
             else:
                 allowed = user_id in (self.settings.get_all_user_id() if self.settings is not None else [])
             if not allowed:
-                await event.reply("Нет доступа к этой команде.")
+                # ответ для неавторизированных пользователей обрабатывается в плагине noauthbot
+                #await event.reply("Нет доступа к этой команде.")
+                pass
             return allowed
 
         self._logger.debug(f"cmd: pattern={pattern}, admin_only={admin_only}")
