@@ -12,7 +12,7 @@ from enum import Enum
 from ..models import User, Role
 from cfg import config_tlg  # Добавьте импорт конфига для доступа к DEFAULT_LANG
 
-from tlgbotcore.csvdbutils.csvdb.csvdb import CSVDB
+from .csvdb.csvdb import CSVDB
 
 # icecream убран из продакшн кода - используем logging
 
