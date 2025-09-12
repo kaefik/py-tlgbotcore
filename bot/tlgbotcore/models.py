@@ -77,8 +77,11 @@ class User:
 
     def __str__(self) -> str:
         return (
-            f"User -> id: {self.id}\t{type(self.id)}\n\tname: {self.name}\t{type(self.name)}\n\t"
-            f"active: {self.active}\t{type(self.active)}\n\trole: {self.role}\t{type(self.role)}\n\t\n"
+            f"User -> id: {self.id}\t{type(self.id)}\n\t"
+            f"name: {self.name}\t{type(self.name)}\n\t"
+            f"active: {self.active}\t{type(self.active)}\n\t"
+            f"role: {self.role}\t{type(self.role)}\n\t"
+            f"lang: {self.lang}\t{type(self.lang)}\n"
         )
 
     def __eq__(self, other: Any) -> bool:
