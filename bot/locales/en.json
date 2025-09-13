@@ -47,4 +47,35 @@
     "plugin_unexpected_error": "Unexpected error while loading plugin {name} from {path}: {error}",
     "unload_unhandled_exception": "Unhandled exception unloading {name}",
     "removed_plugin": "Removed plugin {name}"
+    ,
+    "inline_choose": "Choose an action:",
+    "start_welcome": "Hi! Press commands to get information!",
+    "runner_finished": "Conversation finished."
+    ,
+        "inline_button_today": "today",
+        "inline_button_tomorrow": "tomorrow",
+        "inline_button_any": "any day",
+        "inline_choice_selected": "You selected - {choice}",
+    "noauth_attempt_notify": "User with id {user_id} attempted to gain access"
+    ,
+    "user_info_error": "Error getting info for user id {user_id}: {err}"
+
+    ,
+    "start_cmd_1": "command1",
+    "start_cmd_2": "command2",
+    "start_cmd_3": "command3",
+    "start_cmd_4": "command4",
+
+    "runner_start": "Starting questionnaire.",
+    "rq_answer_n": "Question #{n}",
+    "rq_type_must_be": "Answer type must be: {type_name}",
+    "rq_choose_from_list": "Choose one of the options:",
+    "rq_need_number": "Please enter a number.",
+    "rq_need_choice_number": "Please enter a valid option number.",
+    "rq_string_not_empty": "String must not be empty.",
+
+    "type_int": "number",
+    "type_string": "string",
+    "type_float": "floating number",
+    "type_list": "list of options"
 }

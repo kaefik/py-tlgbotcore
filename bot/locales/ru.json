@@ -3,8 +3,8 @@
     "no_access": "У вас нет доступа к боту. Ваш id {user_id}. Обратитесь к администратору.",
     "choose_lang": "Выберите язык. Доступные языки:",
     "lang_not_supported": "Язык с кодом {code} не поддерживается.",
-    "lang_changed": "Язык успешно изменён на {lang_name}."
-    ,
+    "lang_changed": "Язык успешно изменён на {lang_name}.",
+
     "reload_core_forbidden": "Плагин _core нельзя перезагружать.",
     "reload_success": "Плагин {name} успешно (пере)загружен.",
     "reload_failed": "Не удалось (пере)загрузить плагин {name}: {error}",
@@ -14,6 +14,7 @@
     "list_plugins_header": "Загружено плагинов: {count}",
     "help_no_info": "Справочной информации по данному плагину нет.",
     "help_plugin_not_loaded": "Плагин {name} не загружен.",
+
     "adduser_start": "Выполняется команда /adduser",
     "adduser_ask_id": "Введите id пользователя, которого нужно добавить:",
     "adduser_id_not_digit": "ID нового пользователя должен быть числом. Попробуйте ещё раз.",
@@ -23,8 +24,8 @@
     "deluser_ask_id": "Введите id пользователя, которого нужно удалить:",
     "deluser_id_not_digit": "ID пользователя должен быть числом. Попробуйте ещё раз.",
     "deluser_success": "Доступ пользователю с ID: {user_id} запрещён.",
-    "deluser_admin_forbidden": "Удаление пользователя с правами администратора запрещено."
-    ,
+    "deluser_admin_forbidden": "Удаление пользователя с правами администратора запрещено.",
+
     "admins_list": "Админы ботов {admins}",
     "bot_token_missing": "Не указан параметр bot_token.",
     "admins_refreshed": "Обновлён список админов: {admins}",
@@ -46,5 +47,35 @@
     "plugin_syntax_error": "Синтаксическая ошибка в плагине {name}: {error}",
     "plugin_unexpected_error": "Неожиданная ошибка при загрузке плагина {name} из {path}: {error}",
     "unload_unhandled_exception": "Unhandled exception unloading {name}",
-    "removed_plugin": "Removed plugin {name}"
+    "removed_plugin": "Removed plugin {name}",
+
+    "inline_choose": "Выберите действие:",
+    "start_welcome": "Привет! жми на команды и получай информацию!",
+    "runner_finished": "Беседа закончена.",
+
+    "inline_button_today": "сегодня",
+    "inline_button_tomorrow": "завтра",
+    "inline_button_any": "любой день",
+    "inline_choice_selected": "Вы выбрали - {choice}",
+
+    "noauth_attempt_notify": "Пользователь с id {user_id} пытается получить доступ",
+    "user_info_error": "Ошибка получения информации о пользователе с id {user_id}: {err}",
+
+    "start_cmd_1": "команда1",
+    "start_cmd_2": "команда2",
+    "start_cmd_3": "команда3",
+    "start_cmd_4": "команда4"
+    ,
+    "runner_start": "Начинаем анкету.",
+    "rq_answer_n": "Вопрос #{n}",
+    "rq_type_must_be": "Тип ответа должен быть: {type_name}",
+    "rq_choose_from_list": "Выберите один из вариантов:",
+    "rq_need_number": "Пожалуйста, введите число.",
+    "rq_need_choice_number": "Пожалуйста, введите корректный номер варианта.",
+    "rq_string_not_empty": "Строка не должна быть пустой.",
+
+    "type_int": "число",
+    "type_string": "строка",
+    "type_float": "число с плавающей точкой",
+    "type_list": "список ответов"
 }
