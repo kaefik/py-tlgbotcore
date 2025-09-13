@@ -19,4 +19,5 @@ TYPE_DB = "SQLITE"
 SETTINGS_DB_PATH = "settings.db"  # путь к файлу БД настроек
 
 # глобальный язык по умолчанию для бота
+# en - английский, ru - русский, ba - башкирский, tt - татарский
 DEFAULT_LANG = "en"
