@@ -30,11 +30,18 @@ class TlgBotCore(TelegramClient):
             self.admins = self.settings.get_user_type_id(Role.admin)  # список администраторов бота
         else:
             self.admins = admins  # fallback к переданным админам
-        self._logger.info(f"Админы ботов {self.admins}")
+        # логируем с локализацией (если i18n доступен через self.i18n)
+        try:
+            self._logger.info(self._t('admins_list', admins=self.admins))
+        except Exception:
+            self._logger.info(f"Админы ботов {self.admins}")
         # END настройки бота
 
         if bot_token is None:
-            self._logger.info("Не указан параметр bot_token.")
+            try:
+                self._logger.info(self._t('bot_token_missing'))
+            except Exception:
+                self._logger.info("Не указан параметр bot_token.")
 
         super().__init__(session, **kwargs)
 
@@ -55,11 +62,11 @@ class TlgBotCore(TelegramClient):
         try:
             if self.settings is not None:
                 self.admins = self.settings.get_user_type_id(Role.admin)
-                self._logger.info(f"Обновлён список админов: {self.admins}")
+                self._logger.info(self._t('admins_refreshed', admins=self.admins))
             else:
                 self.admins = []
         except Exception:
-            self._logger.exception("Не удалось обновить список админов")
+            self._logger.exception(self._t('admins_refresh_failed'))
 
     async def _async_init(self, **kwargs: Any) -> None:
         """Асинхронная инициализация клиента."""
@@ -87,19 +94,19 @@ class TlgBotCore(TelegramClient):
             # загрузка core-плагина
             core_plugin = Path(__file__).parent / "_core.py"
             if not self.load_plugin_from_file(core_plugin):
-                self._logger.error("Не удалось загрузить core плагин")
+                self._logger.error(self._t('core_load_failed'))
                 return
             
             # загрузка остальных плагинов
             if not os.path.exists(self._plugin_path):
-                self._logger.warning(f"Нет папки с плагинами {self._plugin_path}")
+                self._logger.warning(self._t('plugins_folder_missing', path=self._plugin_path))
                 return
             
             await self.load_all_plugins()
-            self._logger.info("Ядро бота успешно запущено")
+            self._logger.info(self._t('core_started'))
             
         except Exception as exc:
-            self._logger.exception("Критическая ошибка при запуске ядра: %s", exc)
+            self._logger.exception(self._t('core_critical_error', error=exc))
             raise
 
     def load_plugin(self, shortname: str) -> None:
@@ -115,7 +122,7 @@ class TlgBotCore(TelegramClient):
 
             # получим все папки плагинов
             content = os.listdir(self._plugin_path)
-            self._logger.info(f"Найдены директории: {content}")
+            self._logger.info(self._t('found_directories', content=content))
 
             loaded_count = 0
             failed_count = 0
@@ -123,17 +130,17 @@ class TlgBotCore(TelegramClient):
             for directory in content:
                 dir_path = f"{self._plugin_path}/{directory}"
                 if os.path.isdir(dir_path):
-                    self._logger.info(f"Загружаем плагины из папки: {directory}")
+                    self._logger.info(self._t('loading_plugins_from', directory=directory))
                     for plugin_file in Path().glob(f"{dir_path}/*.py"):
                         if self.load_plugin_from_file(plugin_file):
                             loaded_count += 1
                         else:
                             failed_count += 1
 
-            self._logger.info(f"Загрузка плагинов завершена: {loaded_count} успешно, {failed_count} с ошибками")
+            self._logger.info(self._t('plugins_load_summary', loaded=loaded_count, failed=failed_count))
 
         except Exception as exc:
-            self._logger.exception("Ошибка при загрузке плагинов: %s", exc)
+            self._logger.exception(self._t('plugins_load_error', error=exc))
 
     def load_plugin_from_file(self, path: Union[str, Path]) -> bool:
         """Загрузка плагина из файла с улучшенной обработкой ошибок."""
@@ -146,7 +153,7 @@ class TlgBotCore(TelegramClient):
         
         # Запрещаем перезагрузку _core плагина
         if shortname == '_core' and shortname in self._plugins:
-            self._logger.warning("Перезагрузка _core плагина запрещена")
+            self._logger.warning(self._t('core_reload_forbidden'))
             return False
         
         name = f"_TlgBotCorePlugins.{self._name}.{shortname}"
@@ -154,7 +161,7 @@ class TlgBotCore(TelegramClient):
         try:
             spec = importlib.util.spec_from_file_location(name, path)
             if spec is None or spec.loader is None:
-                self._logger.error(f"Не удалось создать spec для {path}")
+                self._logger.error(self._t('spec_create_failed', path=path))
                 return False
                 
             mod = importlib.util.module_from_spec(spec)
@@ -167,26 +174,26 @@ class TlgBotCore(TelegramClient):
             if spec.loader is not None:
                 spec.loader.exec_module(mod)
             else:
-                self._logger.error(f"Нет загрузчика для {shortname}")
+                self._logger.error(self._t('no_loader_for', name=shortname))
                 return False
             
             # Health-check: проверка наличия tlgbot
             if not hasattr(mod, 'tlgbot'):
-                self._logger.error(f"Плагин {shortname} не содержит 'tlgbot' ссылку")
+                self._logger.error(self._t('plugin_no_tlgbot', name=shortname))
                 return False
             
             self._plugins[shortname] = mod
-            self._logger.info(f"Плагин {shortname} успешно загружен")
+            self._logger.info(self._t('plugin_loaded', name=shortname))
             return True
             
         except ImportError as exc:
-            self._logger.error(f"Ошибка импорта плагина {shortname}: {exc}")
+            self._logger.error(self._t('plugin_import_error', name=shortname, error=exc))
             return False
         except SyntaxError as exc:
-            self._logger.error(f"Синтаксическая ошибка в плагине {shortname}: {exc}")
+            self._logger.error(self._t('plugin_syntax_error', name=shortname, error=exc))
             return False
         except Exception as exc:
-            self._logger.exception(f"Неожиданная ошибка при загрузке плагина {shortname} из {path}: {exc}")
+            self._logger.exception(self._t('plugin_unexpected_error', name=shortname, path=path, error=exc))
             return False
 
     async def remove_plugin(self, shortname: str) -> None:
@@ -204,10 +211,10 @@ class TlgBotCore(TelegramClient):
                 if inspect.isawaitable(unload):
                     await unload
             except Exception:
-                self._logger.exception(f'Unhandled exception unloading {shortname}')
+                self._logger.exception(self._t('unload_unhandled_exception', name=shortname))
 
         del plugin
-        self._logger.info(f"Removed plugin {shortname}")
+        self._logger.info(self._t('removed_plugin', name=shortname))
 
     def await_event(self, event_matcher: Any, filter: Optional[Any] = None) -> asyncio.Future[Any]:
         fut: asyncio.Future[Any] = asyncio.Future()
@@ -248,10 +255,10 @@ class TlgBotCore(TelegramClient):
                 allowed = user_id in (self.admins if self.settings is None else self.settings.get_user_type_id(Role.admin))
             else:
                 allowed = user_id in (self.settings.get_all_user_id() if self.settings is not None else [])
-            if not allowed:
-                # ответ для неавторизированных пользователей обрабатывается в плагине noauthbot
-                #await event.reply("Нет доступа к этой команде.")
-                pass
+                if not allowed:
+                    # ответ для неавторизированных пользователей обрабатывается в плагине noauthbot
+                    # await event.reply(self._t('no_access'))
+                    pass
             return allowed
 
         self._logger.debug(f"cmd: pattern={pattern}, admin_only={admin_only}")
@@ -261,6 +268,45 @@ class TlgBotCore(TelegramClient):
             pattern=pattern,
             func=access_filter  # <-- динамическая проверка
         )
+
+    def _t(self, key: str, lang: Optional[str] = None, **kwargs: Any) -> str:
+        """Helper to translate messages using the injected I18n (`self.i18n`) with fallback.
+
+        If `self.i18n` is not available, falls back to default Russian strings built-in here.
+        """
+        try:
+            if hasattr(self, 'i18n') and self.i18n is not None:
+                return self.i18n.t(key, lang=lang, **kwargs)
+        except Exception:
+            pass
+
+        # Fallback messages (minimal) - keep these in sync with locales
+        fallbacks = {
+            'admins_list': f"Админы ботов {kwargs.get('admins')}",
+            'bot_token_missing': "Не указан параметр bot_token.",
+            'admins_refreshed': f"Обновлён список админов: {kwargs.get('admins')}",
+            'admins_refresh_failed': "Не удалось обновить список админов",
+            'core_load_failed': "Не удалось загрузить core плагин",
+            'plugins_folder_missing': f"Нет папки с плагинами {kwargs.get('path')}",
+            'core_started': "Ядро бота успешно запущено",
+            'core_critical_error': f"Критическая ошибка при запуске ядра: {kwargs.get('error')}",
+            'found_directories': f"Найдены директории: {kwargs.get('content')}",
+            'loading_plugins_from': f"Загружаем плагины из папки: {kwargs.get('directory')}",
+            'plugins_load_summary': f"Загрузка плагинов завершена: {kwargs.get('loaded')} успешно, {kwargs.get('failed')} с ошибками",
+            'plugins_load_error': f"Ошибка при загрузке плагинов: {kwargs.get('error')}",
+            'core_reload_forbidden': "Перезагрузка _core плагина запрещена",
+            'spec_create_failed': f"Не удалось создать spec для {kwargs.get('path')}",
+            'no_loader_for': f"Нет загрузчика для {kwargs.get('name')}",
+            'plugin_no_tlgbot': f"Плагин {kwargs.get('name')} не содержит 'tlgbot' ссылку",
+            'plugin_loaded': f"Плагин {kwargs.get('name')} успешно загружен",
+            'plugin_import_error': f"Ошибка импорта плагина {kwargs.get('name')}: {kwargs.get('error')}",
+            'plugin_syntax_error': f"Синтаксическая ошибка в плагине {kwargs.get('name')}: {kwargs.get('error')}",
+            'plugin_unexpected_error': f"Неожиданная ошибка при загрузке плагина {kwargs.get('name')} из {kwargs.get('path')}: {kwargs.get('error')}",
+            'unload_unhandled_exception': f"Unhandled exception unloading {kwargs.get('name')}",
+            'removed_plugin': f"Removed plugin {kwargs.get('name')}",
+            'no_access': "Нет доступа к этой команде."
+        }
+        return fallbacks.get(key, key)
 
     def admin_cmd(self, command: str, pattern: Optional[str] = None) -> telethon.events.NewMessage:
         return self.cmd(command, pattern, admin_only=True)
