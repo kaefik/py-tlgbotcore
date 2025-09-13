@@ -7,12 +7,19 @@ Core commands for admin users
 """
 import asyncio
 import traceback
+import logging
+from typing import Any
 
 from cfg import config_tlg  # Добавьте импорт конфига для доступа к DEFAULT_LANG
 from cfg.config_tlg import TYPE_DB
 from bot.tlgbotcore.models import User
 
 DELETE_TIMEOUT = 2
+
+# runtime injects `tlgbot` when loading the plugin; declare for static analysis
+tlgbot: Any
+
+logger = logging.getLogger(__name__)
 
 
 # вспомогательные функции
@@ -29,6 +36,15 @@ async def get_name_user(client, user_id):
     return new_name_user
 
 
+def _get_event_lang(event):
+    """Return language code for the user who triggered the event, fallback to bot default."""
+    try:
+        user = tlgbot.settings.get_user(event.sender_id)
+        return getattr(user, 'lang', tlgbot.i18n.default_lang)
+    except Exception:
+        return tlgbot.i18n.default_lang
+
+
 # END вспомогательные функции
 
 
@@ -39,7 +55,8 @@ async def load_reload(event):
     shortname = event.pattern_match["shortname"]
 
     if shortname == "_core":
-        await event.respond("Плагин _core нельзя перезагружать.")
+        lang = _get_event_lang(event)
+        await event.respond(tlgbot.i18n.t('reload_core_forbidden', lang=lang))
         return
     else:
         try:
@@ -50,16 +67,19 @@ async def load_reload(event):
             # так как плагин хранится в папке с именем плагина
             tlgbot.load_plugin(f"{shortname}/{shortname}")
 
+            lang = _get_event_lang(event)
             msg = await event.respond(
-                f"Successfully (re)loaded plugin {shortname}")
+                tlgbot.i18n.t('reload_success', lang=lang, name=shortname)
+            )
             if not tlgbot.me.bot:
                 await asyncio.sleep(DELETE_TIMEOUT)
                 await tlgbot.delete_messages(msg.to_id, msg)
 
         except Exception as e:
             tb = traceback.format_exc()
-            logger.warn(f"Failed to (re)load plugin {shortname}: {tb}")
-            await event.respond(f"Failed to (re)load plugin {shortname}: {e}")
+            # log in default language
+            logger.warn(tlgbot.i18n.t('reload_failed', lang=tlgbot.i18n.default_lang, name=shortname, error=tb))
+            await event.respond(tlgbot.i18n.t('reload_failed', lang=_get_event_lang(event), name=shortname, error=e))
 
 
 @tlgbot.on(tlgbot.admin_cmd(r"(?:unload|disable|remove)", r"(?P<shortname>\w+)"))
@@ -69,12 +89,15 @@ async def remove(event):
     shortname = event.pattern_match["shortname"]
 
     if shortname == "_core":
-        msg = await event.respond(f"Not removing {shortname}")
+        lang = _get_event_lang(event)
+        msg = await event.respond(tlgbot.i18n.t('remove_not_removing', lang=lang, name=shortname))
     elif shortname in tlgbot._plugins:
         await tlgbot.remove_plugin(shortname)
-        msg = await event.respond(f"Removed plugin {shortname}")
+        lang = _get_event_lang(event)
+        msg = await event.respond(tlgbot.i18n.t('remove_removed', lang=lang, name=shortname))
     else:
-        msg = await event.respond(f"Plugin {shortname} is not loaded")
+        lang = _get_event_lang(event)
+        msg = await event.respond(tlgbot.i18n.t('remove_not_loaded', lang=lang, name=shortname))
 
     if not tlgbot.me.bot:
         await asyncio.sleep(DELETE_TIMEOUT)
@@ -88,10 +111,14 @@ async def list_plugins(event):
         desc = (mod.__doc__ or '__no description__').replace('\n', ' ').strip()
         result += f'\n**{name}**: {desc}'
 
+    lang = _get_event_lang(event)
+    # localized header
+    header = tlgbot.i18n.t('list_plugins_header', lang=lang, count=len(tlgbot._plugins))
+    full = header + '\n' + '\n'.join([f'**{n}**: {(m.__doc__ or "__no description__").replace("\n", " ").strip()}' for n, m in sorted(tlgbot._plugins.items(), key=lambda t: t[0])])
     if not tlgbot.me.bot:
-        await event.edit(result)
+        await event.edit(full)
     else:
-        await event.respond(result)
+        await event.respond(full)
 
 
 @tlgbot.on(tlgbot.admin_cmd(r"(?:help)", r"(?P<shortname>\w+)"))
@@ -112,10 +139,10 @@ async def remove(event):
         except FileNotFoundError:
             content_help = tlgbot._plugins[shortname].__doc__
             if not content_help:
-                content_help = "Справочной информации по данному плагину нет."
+                content_help = tlgbot.i18n.t('help_no_info', lang=_get_event_lang(event))
         await event.reply(content_help)
     else:
-        await event.reply(f"Plugin {shortname} is not loaded")
+        await event.reply(tlgbot.i18n.t('help_plugin_not_loaded', lang=_get_event_lang(event), name=shortname))
 
 
 # команды работы с БД пользователей
@@ -125,21 +152,21 @@ async def add_user_admin(event):
     добавление активного пользователя с ролью обычного пользователя , по возможности получаем имя пользователя
     :return:
     """
-    await event.respond("Выполняется команда /adduser")
+    lang = _get_event_lang(event)
+    await event.respond(tlgbot.i18n.t('adduser_start', lang=lang))
     chat_id = event.chat_id
     async with tlgbot.conversation(chat_id) as conv:
-        await conv.send_message("Привет! Введите номер id пользователя"
-                                "который нужно добавить для доступа к боту:")
+        await conv.send_message(tlgbot.i18n.t('adduser_ask_id', lang=lang))
         id_new_user = await conv.get_response()
         id_new_user = id_new_user.message
         while not all(x.isdigit() for x in id_new_user):
-            await conv.send_message("ID нового пользователя - это число. Попробуйте еще раз.")
+            await conv.send_message(tlgbot.i18n.t('adduser_id_not_digit', lang=lang))
             id_new_user = await conv.get_response()
             id_new_user = id_new_user.message
 
         new_name_user = await get_name_user(event.client, int(id_new_user))
 
-        logger.info('Имя нового пользователя %s', new_name_user)
+        logger.info(tlgbot.i18n.t('log_new_user_name', lang=tlgbot.i18n.default_lang, name=new_name_user))
         # Указываем язык по умолчанию из конфига
         new_user = User(
             id=id_new_user,
@@ -149,7 +176,7 @@ async def add_user_admin(event):
         )
         tlgbot.settings.add_user(new_user)
         tlgbot.refresh_admins()
-        await conv.send_message(f"Добавили нового пользователя с ID: {id_new_user} с именем {new_name_user}")
+        await conv.send_message(tlgbot.i18n.t('adduser_success', lang=lang, user_id=id_new_user, name=new_name_user))
         await tlgbot.load_all_plugins()
 
 
@@ -166,7 +193,8 @@ async def info_user_admin(event):
 
     ids = [str(x) for x in ids]
     strs = '\n'.join(ids)
-    await event.respond(f"Пользователи которые имеют доступ:\n{strs}")
+    lang = _get_event_lang(event)
+    await event.respond(tlgbot.i18n.t('listusers', lang=lang, users=strs))
 
 
 @tlgbot.on(tlgbot.admin_cmd("deluser"))
@@ -179,21 +207,19 @@ async def del_user_admin(event):
     chat_id = event.chat_id
     async with tlgbot.conversation(chat_id) as conv:
         # response = conv.wait_event(events.NewMessage(incoming=True))
-        await conv.send_message("Привет! Введите номер id пользователя "
-                                "который нужно запретить доступ к боту")
+        await conv.send_message(tlgbot.i18n.t('deluser_ask_id', lang=_get_event_lang(event)))
         id_del_user = await conv.get_response()
         id_del_user = id_del_user.message
         while not any(x.isdigit() for x in id_del_user):
-            await conv.send_message("ID пользователя - это число. "
-                                    "Попробуйте еще раз.")
+            await conv.send_message(tlgbot.i18n.t('deluser_id_not_digit', lang=_get_event_lang(event)))
             id_del_user = await conv.get_response()
             id_del_user = id_del_user.message
 
         if not (int(id_del_user) in tlgbot.admins):
             tlgbot.settings.del_user(int(id_del_user))
             tlgbot.refresh_admins()
-            await conv.send_message(f"Пользователю с ID: {id_del_user} доступ к боту запрещен.")
+            await conv.send_message(tlgbot.i18n.t('deluser_success', lang=_get_event_lang(event), user_id=id_del_user))
             await tlgbot.load_all_plugins()
         else:
-            await conv.send_message("Удаление пользователя с правами администратора запрещено.")
+            await conv.send_message(tlgbot.i18n.t('deluser_admin_forbidden', lang=_get_event_lang(event)))
 # END команды работы с БД пользователей
