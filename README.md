@@ -130,30 +130,10 @@ uv run pytest              # тесты (добавьте свои)
 **Docker:**
 ```bash
 docker build -t py-tlgbotcore .
-docker run -d --name tlgbotcore --restart unless-stopped \
-  -e TLG_APP_NAME=your_app -e TLG_APP_API_ID=12345678 -e TLG_APP_API_HASH=your_hash \
-  -e I_BOT_TOKEN=your_token -e TLG_ADMIN_ID_CLIENT=123456789 \
-  -v ./logs:/app/logs -v ./settings.db:/app/settings.db py-tlgbotcore
-docker logs -f tlgbotcore
+docker run -d --name tlgbotcore --restart unless-stopped -v ./logs:/app/logs:z -v ./data:/app/data:z -v ./cfg/config_tlg.py:/app/cfg/config_tlg.py:z py-tlgbotcore
+
 ```
 
-**Docker Compose:**
-```yaml
-version: '3.8'
-services:
-  tlgbotcore:
-    build: .
-    restart: unless-stopped
-    environment:
-      - TLG_APP_NAME=your_app
-      - TLG_APP_API_ID=12345678
-      - TLG_APP_API_HASH=your_hash
-      - I_BOT_TOKEN=your_token
-      - TLG_ADMIN_ID_CLIENT=123456789
-    volumes:
-      - ./logs:/app/logs
-      - ./settings.db:/app/settings.db
-```
 
 ---
 
