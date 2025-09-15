@@ -9,10 +9,13 @@ import asyncio
 import traceback
 import logging
 from typing import Any
+from telethon import events, Button
 
 from cfg import config_tlg  # Добавьте импорт конфига для доступа к DEFAULT_LANG
 from cfg.config_tlg import TYPE_DB
 from bot.tlgbotcore.models import User
+
+logger = logging.getLogger(__name__)
 
 DELETE_TIMEOUT = 2
 
@@ -46,6 +49,61 @@ def _get_event_lang(event):
 
 
 # END вспомогательные функции
+
+# Функции для работы с событиями от кнопок
+# Обработчик для кнопок при добавлении пользователя
+notify_add_user_id = None
+notify_add_user_name = None
+
+@tlgbot.on(events.CallbackQuery(pattern='notify_add_yes|notify_add_no'))
+async def on_notify_add_button(event):
+    global notify_add_user_id, notify_add_user_name
+    choice = event.data.decode("utf-8")
+    lang = _get_event_lang(event)
+    
+    if choice == 'notify_add_yes' and notify_add_user_id:
+        try:
+            # Отправляем уведомление пользователю
+            await event.client.send_message(
+                int(notify_add_user_id), 
+                tlgbot.i18n.t('adduser_notify_user', lang=tlgbot.i18n.default_lang)
+            )
+            await event.edit(tlgbot.i18n.t('adduser_notify_sent', lang=lang))
+        except Exception as e:
+            logger.error(f"Ошибка при отправке уведомления пользователю {notify_add_user_id}: {e}")
+            await event.edit(f"Ошибка при отправке уведомления: {e}")
+    else:
+        await event.edit(tlgbot.i18n.t('adduser_success', lang=lang, user_id=notify_add_user_id, name=notify_add_user_name))
+    
+    # Сбросим ID для следующего использования
+    notify_add_user_id = None
+    notify_add_user_name = None
+
+# Обработчик для кнопок при удалении пользователя
+notify_del_user_id = None
+
+@tlgbot.on(events.CallbackQuery(pattern='notify_del_yes|notify_del_no'))
+async def on_notify_del_button(event):
+    global notify_del_user_id
+    choice = event.data.decode("utf-8")
+    lang = _get_event_lang(event)
+    
+    if choice == 'notify_del_yes' and notify_del_user_id:
+        try:
+            # Отправляем уведомление пользователю
+            await event.client.send_message(
+                int(notify_del_user_id), 
+                tlgbot.i18n.t('deluser_notify_user', lang=tlgbot.i18n.default_lang)
+            )
+            await event.edit(tlgbot.i18n.t('deluser_notify_sent', lang=lang))
+        except Exception as e:
+            logger.error(f"Ошибка при отправке уведомления пользователю {notify_del_user_id}: {e}")
+            await event.edit(f"Ошибка при отправке уведомления: {e}")
+    else:
+        await event.edit(tlgbot.i18n.t('deluser_success', lang=lang, user_id=notify_del_user_id))
+    
+    # Сбросим ID для следующего использования
+    notify_del_user_id = None
 
 
 @tlgbot.on(tlgbot.admin_cmd(r"(?:re)?load", r"(?P<shortname>\w+)"))
@@ -152,6 +210,7 @@ async def add_user_admin(event):
     добавление активного пользователя с ролью обычного пользователя , по возможности получаем имя пользователя
     :return:
     """
+    global notify_add_user_id, notify_add_user_name
     lang = _get_event_lang(event)
     await event.respond(tlgbot.i18n.t('adduser_start', lang=lang))
     chat_id = event.chat_id
@@ -176,7 +235,23 @@ async def add_user_admin(event):
         )
         tlgbot.settings.add_user(new_user)
         tlgbot.refresh_admins()
-        await conv.send_message(tlgbot.i18n.t('adduser_success', lang=lang, user_id=id_new_user, name=new_name_user))
+        
+        # Сохраняем ID и имя для обработчика кнопок
+        notify_add_user_id = id_new_user
+        notify_add_user_name = new_name_user
+        
+        # Создаем кнопки для выбора
+        notify_buttons = [
+            [Button.inline(tlgbot.i18n.t('yes', lang=lang), b"notify_add_yes"),
+             Button.inline(tlgbot.i18n.t('no', lang=lang), b"notify_add_no")]
+        ]
+        
+        # Спрашиваем, отправлять ли уведомление пользователю, с помощью inline-кнопок
+        await conv.send_message(
+            tlgbot.i18n.t('adduser_ask_notify', lang=lang),
+            buttons=notify_buttons
+        )
+        
         await tlgbot.load_all_plugins()
 
 
@@ -203,23 +278,40 @@ async def del_user_admin(event):
     удаление пользователя из БД пользователей, тем самым запрещая доступ указанному пользователю
     :return:
     """
+    global notify_del_user_id
     # диалог с запросом информации нужной для работы команды /deluser
     chat_id = event.chat_id
+    lang = _get_event_lang(event)
     async with tlgbot.conversation(chat_id) as conv:
         # response = conv.wait_event(events.NewMessage(incoming=True))
-        await conv.send_message(tlgbot.i18n.t('deluser_ask_id', lang=_get_event_lang(event)))
+        await conv.send_message(tlgbot.i18n.t('deluser_ask_id', lang=lang))
         id_del_user = await conv.get_response()
         id_del_user = id_del_user.message
         while not any(x.isdigit() for x in id_del_user):
-            await conv.send_message(tlgbot.i18n.t('deluser_id_not_digit', lang=_get_event_lang(event)))
+            await conv.send_message(tlgbot.i18n.t('deluser_id_not_digit', lang=lang))
             id_del_user = await conv.get_response()
             id_del_user = id_del_user.message
 
         if not (int(id_del_user) in tlgbot.admins):
+            # Сохраняем ID для обработчика кнопок
+            notify_del_user_id = id_del_user
+            
+            # Создаем кнопки для выбора
+            notify_buttons = [
+                [Button.inline(tlgbot.i18n.t('yes', lang=lang), b"notify_del_yes"),
+                 Button.inline(tlgbot.i18n.t('no', lang=lang), b"notify_del_no")]
+            ]
+            
+            # Спрашиваем, отправлять ли уведомление пользователю, с помощью inline-кнопок
+            await conv.send_message(
+                tlgbot.i18n.t('deluser_ask_notify', lang=lang),
+                buttons=notify_buttons
+            )
+            
+            # Удаляем пользователя
             tlgbot.settings.del_user(int(id_del_user))
             tlgbot.refresh_admins()
-            await conv.send_message(tlgbot.i18n.t('deluser_success', lang=_get_event_lang(event), user_id=id_del_user))
             await tlgbot.load_all_plugins()
         else:
-            await conv.send_message(tlgbot.i18n.t('deluser_admin_forbidden', lang=_get_event_lang(event)))
+            await conv.send_message(tlgbot.i18n.t('deluser_admin_forbidden', lang=lang))
 # END команды работы с БД пользователей
