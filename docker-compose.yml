@@ -1,40 +1,38 @@
-version: '3.8'
-
 services:
   tlgbotcore:
     build: .
     container_name: py-tlgbotcore
     restart: unless-stopped
     
-    environment:
-      # Telegram API настройки (обязательные)
-      - TLG_APP_NAME=${TLG_APP_NAME}
-      - TLG_APP_API_ID=${TLG_APP_API_ID}
-      - TLG_APP_API_HASH=${TLG_APP_API_HASH}
-      - I_BOT_TOKEN=${I_BOT_TOKEN}
+    # environment:
+    #   # Telegram API настройки (обязательные)
+    #   - TLG_APP_NAME=${TLG_APP_NAME}
+    #   - TLG_APP_API_ID=${TLG_APP_API_ID}
+    #   - TLG_APP_API_HASH=${TLG_APP_API_HASH}
+    #   - I_BOT_TOKEN=${I_BOT_TOKEN}
       
-      # Администраторы (ID через запятую)
-      - TLG_ADMIN_ID_CLIENT=${TLG_ADMIN_ID_CLIENT}
+    #   # Администраторы (ID через запятую)
+    #   - TLG_ADMIN_ID_CLIENT=${TLG_ADMIN_ID_CLIENT}
       
-      # Настройки БД
-      - TYPE_DB=${TYPE_DB:-SQLITE}
-      - SETTINGS_DB_PATH=/app/data/settings.db
+    #   # Настройки БД
+    #   - TYPE_DB=${TYPE_DB:-SQLITE}
+    #   - SETTINGS_DB_PATH=/app/data/settings.db
       
-      # Прокси (опционально)
-      - TLG_PROXY_SERVER=${TLG_PROXY_SERVER:-}
-      - TLG_PROXY_PORT=${TLG_PROXY_PORT:-}
-      - TLG_PROXY_KEY=${TLG_PROXY_KEY:-}
+    #   # Прокси (опционально)
+    #   - TLG_PROXY_SERVER=${TLG_PROXY_SERVER:-}
+    #   - TLG_PROXY_PORT=${TLG_PROXY_PORT:-}
+    #   - TLG_PROXY_KEY=${TLG_PROXY_KEY:-}
     
     volumes:
       # Персистентное хранение данных
-      - ./data:/app/data
-      - ./logs:/app/logs
+      - ./data:/app/data:z
+      - ./logs:/app/logs:z
       
       # Опционально: кастомные плагины
-      - ./bot/plugins_bot:/app/bot/plugins_bot
+      #- ./bot/plugins_bot:/app/bot/plugins_bot
       
       # Опционально: кастомная конфигурация
-      # - ./cfg/config_tlg.py:/app/cfg/config_tlg.py
+      - ./cfg/config_tlg.py:/app/cfg/config_tlg.py:z
     
     # Порт для потенциальных webhook'ов
     ports:

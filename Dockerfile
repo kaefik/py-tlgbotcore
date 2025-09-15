@@ -24,6 +24,11 @@ RUN pip install uv && \
 # Копирование исходного кода
 COPY --chown=tlgbot:tlgbot . .
 
+# Создание копии конфигурации (резервный вариант)
+# RUN if [ -f /app/cfg/config_tlg_example.py ]; then \
+#     cp /app/cfg/config_tlg_example.py /app/cfg/config_tlg.py.sample; \
+#     fi
+
 # Создание директорий для логов и данных
 RUN mkdir -p /app/logs /app/data && \
     chown -R tlgbot:tlgbot /app
@@ -45,4 +50,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 EXPOSE 8080
 
 # Точка входа
-ENTRYPOINT ["uv", "run", "tlgbotcore"]
+ENTRYPOINT ["uv", "run", "-m", "bot.start_tlgbotcore"]
