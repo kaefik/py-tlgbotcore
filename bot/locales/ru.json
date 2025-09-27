@@ -4,6 +4,9 @@
     "choose_lang": "Выберите язык. Доступные языки:",
     "lang_not_supported": "Язык с кодом {code} не поддерживается.",
     "lang_changed": "Язык успешно изменён на {lang_name}.",
+    
+    "menu_keyboard_button": "Меню",
+    "menu_keyboard_added": "Клавиатура с кнопкой меню добавлена.",
 
     "reload_core_forbidden": "Плагин _core нельзя перезагружать.",
     "reload_success": "Плагин {name} успешно (пере)загружен.",

@@ -3,7 +3,10 @@
     "no_access": "You have no access to the bot. Your id is {user_id}. Contact the administrator.",
     "choose_lang": "Choose a language. Available languages:",
     "lang_not_supported": "Language with code {code} is not supported.",
-    "lang_changed": "Language successfully changed to {lang_name}."
+    "lang_changed": "Language successfully changed to {lang_name}.",
+    
+    "menu_keyboard_button": "Menu",
+    "menu_keyboard_added": "Keyboard with menu button has been added."
     ,
     "reload_core_forbidden": "The _core plugin cannot be reloaded.",
     "reload_success": "Successfully (re)loaded plugin {name}.",
