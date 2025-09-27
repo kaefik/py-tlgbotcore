@@ -175,9 +175,5 @@ async def menu_admin_back(event):
     await show_menu_admin(event)
 
 
-@tlgbot.on(events.CallbackQuery(pattern=r'^menu:back$'))
-async def menu_back(event):
-    """Обработчик возврата в главное меню."""
-    # Импортируем функцию для отправки основного меню
-    from bot.menu_system import send_main_menu
-    await send_main_menu(event)
+# Обработчик возврата в главное меню уже реализован в menu_system.py
+# Этот код больше не нужен и может быть удален

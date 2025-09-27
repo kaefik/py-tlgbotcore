@@ -437,6 +437,16 @@ def init_menu_system(tlgbot: Any) -> None:
     """
     from telethon import events  # type: ignore
     
+    # Регистрируем специальный пункт 'back' в системе меню
+    register_menu({
+        'key': 'back',
+        'tr_key': 'menu_back',
+        'plugin': 'menu_system',
+        'handler': 'handle_back_button',
+        'order': 999,  # Всегда внизу меню
+        'admin_only': False  # Доступен всем пользователям
+    })
+    
     @tlgbot.on(events.CallbackQuery(pattern=r'^menu:'))
     async def menu_callback_router(event):
         """
@@ -464,6 +474,11 @@ def init_menu_system(tlgbot: Any) -> None:
             setattr(event, 'menu_params', [])
             logger.debug(f"Вызов меню без параметров: key={menu_key}")
         
+        # Специальный случай для кнопки "назад"
+        if menu_key == 'back':
+            await send_main_menu(event)
+            return True
+            
         # Вызываем соответствующий обработчик
         success = await dispatch_command(event, menu_key)
         
@@ -502,6 +517,15 @@ def init_menu_system(tlgbot: Any) -> None:
                 logger.debug(f"Текстовое сообщение соответствует пункту меню: {entry.key}")
                 await dispatch_command(event, entry.key)
                 break
+
+
+async def handle_back_button(event):
+    """
+    Обработчик для кнопки 'Назад' - возвращает пользователя в главное меню.
+    """
+    # Просто вызываем функцию отправки главного меню
+    await send_main_menu(event)
+    return True
 
 
 async def send_main_menu(event: Any, lang: Optional[str] = None) -> None:
