@@ -5,6 +5,30 @@
     "lang_not_supported": "{code} kody menän tel xuplanmay.",
     "lang_changed": "Tel uñışlı räweştä {lang_name} itep üzgärtelde."
     ,
+    "menu_welcome": "Ğämälde hayla:",
+    "menu_test_hello": "Sälämläü",
+    "menu_test_hello_response": "Sälam! Bıl test menu punktı.",
+    "menu_test_admin_action": "Admin funktsiähı",
+    "menu_test_admin_response": "Bıl ğämäl barı tik administratorzar ösön genä asıq.",
+    "menu_test_with_params": "Parametrlı funktsiya",
+    "menu_test_params_response": "Parametrźar menän saqırıldı: {params}",
+    
+    "menu_admin_title": "Menu idara iteü",
+    
+    "menu_privet_title": "Sälämläü",
+    "menu_privet_response": "Sälam! Xäldär nisek?",
+    
+    "menu_setlang_title": "Telde almaştırıu",
+    "menu_setlang_response": "Tübändäge isemektän telde haylaığız:",
+    
+    "menu_inline_title": "Töymälär demohı",
+    "menu_inline_response": "Eske töymälär demonstratsiähı:",
+    "menu_admin_menu_title": "Administratorzar idara iteü menühı",
+    "menu_admin_refresh": "🔄 Menu käşın yañırtıu",
+    "menu_admin_list": "📋 Menu punkttarı isemlege",
+    "menu_admin_reload": "🔄 Plagindarzı yañınan yökläü",
+    "menu_admin_items_title": "Menu punkttarı isemlege:",
+    "menu_back": "◀️ Kire",
     "reload_core_forbidden": "_core plagindı yañınan yökläü röxsät itelmäy.",
     "reload_success": "{name} plagin uñışlı (yañınan) yöklände.",
     "reload_failed": "{name} plagindı (yañınan) yökläp bulmanı: {error}",

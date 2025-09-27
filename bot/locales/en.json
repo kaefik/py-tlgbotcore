@@ -64,11 +64,33 @@
         "inline_button_tomorrow": "tomorrow",
         "inline_button_any": "any day",
         "inline_choice_selected": "You selected - {choice}",
-    "noauth_attempt_notify": "User with id {user_id} attempted to gain access"
-    ,
-    "user_info_error": "Error getting info for user id {user_id}: {err}"
-
-    ,
+    "noauth_attempt_notify": "User with id {user_id} attempted to gain access",
+    "user_info_error": "Error getting info for user id {user_id}: {err}",
+    
+    "menu_welcome": "Choose an action:",
+    "menu_test_hello": "Greeting",
+    "menu_test_hello_response": "Hello! This is a test menu item.",
+    "menu_test_admin_action": "Admin Function",
+    "menu_test_admin_response": "This action is only available to administrators.",
+    "menu_test_with_params": "Function with parameters",
+    "menu_test_params_response": "Called with parameters: {params}",
+    
+    "menu_admin_title": "Menu Management",
+    
+    "menu_privet_title": "Greeting",
+    "menu_privet_response": "Hello! How are you?",
+    
+    "menu_setlang_title": "Change Language",
+    "menu_setlang_response": "Choose a language from the list below:",
+    
+    "menu_inline_title": "Button Demo",
+    "menu_inline_response": "Demonstration of inline buttons:",
+    "menu_admin_menu_title": "Administrative Menu Management",
+    "menu_admin_refresh": "🔄 Refresh Menu Cache",
+    "menu_admin_list": "📋 List Menu Items",
+    "menu_admin_reload": "🔄 Reload Plugins",
+    "menu_admin_items_title": "List of menu items:",
+    "menu_back": "◀️ Back",
     "start_cmd_1": "command1",
     "start_cmd_2": "command2",
     "start_cmd_3": "command3",

@@ -64,11 +64,33 @@
     "inline_button_tomorrow": "иртәгә",
     "inline_button_any": "теләсә кайсы көн",
     "inline_choice_selected": "Син сайладың - {choice}",
-    "noauth_attempt_notify": "ID {user_id} булган кулланучы керергә омтылды"
-    ,
-    "user_info_error": "ID {user_id} булган кулланучы турында мәгълүмат алу хатасы: {err}"
-
-    ,
+    "noauth_attempt_notify": "ID {user_id} булган кулланучы керергә омтылды",
+    "user_info_error": "ID {user_id} булган кулланучы турында мәгълүмат алу хатасы: {err}",
+    
+    "menu_welcome": "Гамәлне сайлагыз:",
+    "menu_test_hello": "Сәламләү",
+    "menu_test_hello_response": "Сәлам! Бу тестлы меню пункты.",
+    "menu_test_admin_action": "Админ функциясе",
+    "menu_test_admin_response": "Бу гамәл бары тик администраторлар өчен генә мөмкин.",
+    "menu_test_with_params": "Параметрлы функция",
+    "menu_test_params_response": "Параметрлар белән чакырылды: {params}",
+    
+    "menu_admin_title": "Меню белән идарә итү",
+    
+    "menu_privet_title": "Сәламләү",
+    "menu_privet_response": "Сәлам! Хәлләрең ничек?",
+    
+    "menu_setlang_title": "Телне үзгәртү",
+    "menu_setlang_response": "Түбәндәге исемлектән телне сайлагыз:",
+    
+    "menu_inline_title": "Төймәләр демосы",
+    "menu_inline_response": "Эчке төймәләр демонстрациясе:",
+    "menu_admin_menu_title": "Административ меню идарәсе",
+    "menu_admin_refresh": "🔄 Меню кэшын яңарту",
+    "menu_admin_list": "📋 Меню пунктлары исемлеге",
+    "menu_admin_reload": "🔄 Плагиннарны яңадан йөкләү",
+    "menu_admin_items_title": "Меню пунктлары исемлеге:",
+    "menu_back": "◀️ Кире",
     "start_cmd_1": "команда1",
     "start_cmd_2": "команда2",
     "start_cmd_3": "команда3",

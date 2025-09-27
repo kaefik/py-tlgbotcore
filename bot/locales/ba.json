@@ -5,6 +5,30 @@
     "lang_not_supported": "{code} коды менән тел хупланмай.",
     "lang_changed": "Тел уңышлы рәүештә {lang_name} итеп үҙгәртелде."
     ,
+    "menu_welcome": "Ғәмәлде һайла:",
+    "menu_test_hello": "Сәләмләү",
+    "menu_test_hello_response": "Сәләм! Был тест меню пункты.",
+    "menu_test_admin_action": "Админ функцияһы",
+    "menu_test_admin_response": "Был ғәмәл бары тик администраторҙар өсөн генә асыҡ.",
+    "menu_test_with_params": "Параметрлы функция",
+    "menu_test_params_response": "Параметрҙар менән саҡырылды: {params}",
+    
+    "menu_admin_title": "Меню идара итеү",
+    
+    "menu_privet_title": "Сәләмләү",
+    "menu_privet_response": "Сәләм! Хәлдәр нисек?",
+    
+    "menu_setlang_title": "Телде алмаштырыу",
+    "menu_setlang_response": "Түбәндәге исемлектән телде һайлағыҙ:",
+    
+    "menu_inline_title": "Төймәләр демоһы",
+    "menu_inline_response": "Эске төймәләр демонстрацияһы:",
+    "menu_admin_menu_title": "Администраторҙар идара итеү менюһы",
+    "menu_admin_refresh": "🔄 Меню кәшын яңыртыу",
+    "menu_admin_list": "📋 Меню пункттары исемлеге",
+    "menu_admin_reload": "🔄 Плагиндарҙы яңынан йөкләү",
+    "menu_admin_items_title": "Меню пункттары исемлеге:",
+    "menu_back": "◀️ Кире",
     "reload_core_forbidden": "_core плагинды яңынан йөкләү рөхсәт ителмәй.",
     "reload_success": "{name} плагин уңышлы (яңынан) йөкләнде.",
     "reload_failed": "{name} плагинды (яңынан) йөкләп булманы: {error}",

@@ -64,11 +64,33 @@
     "inline_button_tomorrow": "irtägä",
     "inline_button_any": "teläsä qayısı kön",
     "inline_choice_selected": "Sin sayladıñ - {choice}",
-    "noauth_attempt_notify": "ID {user_id} bulğan qullanuçı kerergä omtıldı"
-    ,
-    "user_info_error": "ID {user_id} bulğan qullanuçı turında mäğlümat alu xatası: {err}"
-
-    ,
+    "noauth_attempt_notify": "ID {user_id} bulğan qullanuçı kerergä omtıldı",
+    "user_info_error": "ID {user_id} bulğan qullanuçı turında mäğlümat alu xatası: {err}",
+    
+    "menu_welcome": "Ğamälne saylağız:",
+    "menu_test_hello": "Sälämläw",
+    "menu_test_hello_response": "Sälam! Bu testlı menyu punktı.",
+    "menu_test_admin_action": "Admin funktsiäse",
+    "menu_test_admin_response": "Bu ğamäl barı tik administratorlar öçen genä mömkin.",
+    "menu_test_with_params": "Parametrlı funktsiä",
+    "menu_test_params_response": "Parametrlar belän çaqırıldı: {params}",
+    
+    "menu_admin_title": "Menyu belän idarä itü",
+    
+    "menu_privet_title": "Sälämläw",
+    "menu_privet_response": "Sälam! Xälläreñ niçek?",
+    
+    "menu_setlang_title": "Telne üzgärtü",
+    "menu_setlang_response": "Tübändäge isemektän telne saylağız:",
+    
+    "menu_inline_title": "Töymälär demosı",
+    "menu_inline_response": "Eçke töymälär demonstratsiäse:",
+    "menu_admin_menu_title": "Administrativ menyu idaräse",
+    "menu_admin_refresh": "🔄 Menyu keşın yañartu",
+    "menu_admin_list": "📋 Menyu punktları isemlege",
+    "menu_admin_reload": "🔄 Plaginnarny yañadan yökläw",
+    "menu_admin_items_title": "Menyu punktları isemlege:",
+    "menu_back": "◀️ Kire",
     "start_cmd_1": "komanda1",
     "start_cmd_2": "komanda2",
     "start_cmd_3": "komanda3",
