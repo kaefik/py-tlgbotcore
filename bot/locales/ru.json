@@ -36,6 +36,23 @@
     "menu_test_admin_response": "Это действие доступно только администраторам.",
     "menu_test_with_params": "Функция с параметрами",
     "menu_test_params_response": "Вызван с параметрами: {params}",
+    
+    "menu_admin_title": "Управление меню",
+    
+    "menu_privet_title": "Приветствие",
+    "menu_privet_response": "Привет! Как дела?",
+    
+    "menu_setlang_title": "Сменить язык",
+    "menu_setlang_response": "Выберите язык из списка ниже:",
+    
+    "menu_inline_title": "Демо кнопок",
+    "menu_inline_response": "Демонстрация встроенных кнопок:",
+    "menu_admin_menu_title": "Административное меню управления",
+    "menu_admin_refresh": "🔄 Обновить кэш меню",
+    "menu_admin_list": "📋 Список пунктов меню",
+    "menu_admin_reload": "🔄 Перезагрузить плагины",
+    "menu_admin_items_title": "Список пунктов меню:",
+    "menu_back": "◀️ Назад",
     "deluser_ask_notify": "Отправить уведомление пользователю?",
     "deluser_notify_sent": "Уведомление об удалении отправлено пользователю",
     "deluser_notify_user": "Ваш доступ к боту был отозван. Обратитесь к администратору для получения дополнительной информации.",

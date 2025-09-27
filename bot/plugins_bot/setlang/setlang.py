@@ -1,10 +1,20 @@
 """
 Плагин для смены языка пользователя командой /setlang с inline-кнопками
+Интегрирован с системой меню
 """
-
 
 from telethon import events, Button
 from cfg import config_tlg
+from bot.menu_system import register_menu
+
+# Регистрируем плагин в системе меню
+register_menu({
+    'key': 'setlang',
+    'tr_key': 'menu_setlang_title',
+    'plugin': 'setlang',
+    'handler': 'menu_handler',
+    'order': 20  # Показываем после приветствия
+})
 
 @tlgbot.on(tlgbot.cmd('setlang'))
 async def setlang_handler(event):
@@ -18,6 +28,11 @@ async def setlang_handler(event):
         tlgbot.i18n.t("choose_lang", lang=getattr(user, "lang", "ru")),
         buttons=buttons
     )
+    
+# Обработчик для вызова из меню
+async def menu_handler(event):
+    # Используем тот же обработчик, что и для команды /setlang
+    await setlang_handler(event)
 
 @tlgbot.on(events.CallbackQuery(pattern=b"setlang_.*"))
 async def setlang_callback_handler(event):

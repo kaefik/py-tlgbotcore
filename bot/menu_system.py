@@ -37,6 +37,8 @@ class MenuEntry:
         handler (str): Имя функции-обработчика в плагине
         order (int): Порядок сортировки (меньше = выше)
         admin_only (bool): Только для администраторов
+        enabled (bool): Активен ли пункт меню
+        custom_data (Dict): Произвольные данные для использования плагином
     """
     key: str
     tr_key: str
@@ -44,6 +46,13 @@ class MenuEntry:
     handler: str
     order: int
     admin_only: bool = False
+    enabled: bool = True
+    custom_data: Dict[str, Any] = None
+    
+    def __post_init__(self):
+        # Инициализируем custom_data пустым словарем, если не задано
+        if self.custom_data is None:
+            self.custom_data = {}
 
 
 # Глобальный реестр меню - хранит все зарегистрированные пункты меню
@@ -101,24 +110,147 @@ def register_menu(entry_data: Dict[str, Any]) -> bool:
     return True
 
 
-def invalidate_menu(lang: Optional[str] = None) -> None:
+def invalidate_menu(lang: Optional[str] = None, admin_only: Optional[bool] = None, 
+                  menu_key: Optional[str] = None) -> None:
     """
-    Инвалидирует кэш меню.
+    Инвалидирует кэш меню с гибкими опциями фильтрации.
     
     Аргументы:
-        lang: Если указан, сбрасывает кэш только для конкретного языка,
-              иначе сбрасывает весь кэш
+        lang: Если указан, сбрасывает кэш только для конкретного языка
+        admin_only: Если указан, сбрасывает кэш только для определённого типа пользователя
+                   (True - только для админов, False - только для обычных пользователей)
+        menu_key: Если указан, сбрасывает кэш только для меню, содержащих данный ключ
+    
+    Если все аргументы None - сбрасывает весь кэш.
     """
-    if lang is None:
-        # Полностью сбрасываем кэш
+    # Если все параметры None, сбрасываем весь кэш
+    if lang is None and admin_only is None and menu_key is None:
         MENU_CACHE.clear()
         logger.debug("Кэш меню полностью сброшен")
+        return
+    
+    # Определяем ключи для удаления на основе переданных параметров
+    keys_to_remove = []
+    
+    for cache_key in list(MENU_CACHE.keys()):
+        cache_lang, cache_is_admin = cache_key
+        
+        # Проверяем соответствие языка, если указан
+        if lang is not None and cache_lang != lang:
+            continue
+            
+        # Проверяем соответствие типа пользователя, если указан
+        if admin_only is not None and cache_is_admin != admin_only:
+            continue
+            
+        # Если указан ключ меню, проверяем его наличие в кэшированном меню
+        if menu_key is not None:
+            # Проверяем, есть ли указанный ключ в меню
+            found = False
+            for row in MENU_CACHE[cache_key]:
+                for button in row:
+                    # Проверяем callback_data у кнопки
+                    if hasattr(button, 'data') and button.data:
+                        button_data = button.data.decode('utf-8') if isinstance(button.data, bytes) else button.data
+                        if button_data == f"menu:{menu_key}":
+                            found = True
+                            break
+                if found:
+                    break
+                    
+            if not found:
+                continue
+                
+        # Добавляем ключ для удаления, если он прошёл все проверки
+        keys_to_remove.append(cache_key)
+    
+    # Удаляем отфильтрованные ключи из кэша
+    for key in keys_to_remove:
+        del MENU_CACHE[key]
+    
+    if keys_to_remove:
+        logger.debug(f"Кэш меню сброшен для {len(keys_to_remove)} комбинаций параметров")
     else:
-        # Сбрасываем кэш только для указанного языка
-        keys_to_remove = [k for k in MENU_CACHE if k[0] == lang]
-        for key in keys_to_remove:
-            del MENU_CACHE[key]
-        logger.debug(f"Кэш меню сброшен для языка {lang}")
+        logger.debug("Не найдено кэшированных меню, соответствующих указанным параметрам")
+
+
+def toggle_menu_item(menu_key: str, enabled: Optional[bool] = None) -> bool:
+    """
+    Включает или отключает пункт меню.
+    
+    Аргументы:
+        menu_key: Ключ пункта меню
+        enabled: Новое состояние (True - включен, False - отключен)
+                Если None - инвертирует текущее состояние
+                
+    Возвращает:
+        bool: Новое состояние пункта меню (True - включен, False - отключен)
+              Возвращает None, если пункт меню не найден
+    """
+    if menu_key not in MENU_REGISTRY:
+        logger.error(f"Пункт меню '{menu_key}' не найден")
+        return None
+        
+    menu_entry = MENU_REGISTRY[menu_key]
+    
+    if enabled is None:
+        # Инвертируем текущее состояние
+        menu_entry.enabled = not menu_entry.enabled
+    else:
+        # Устанавливаем указанное состояние
+        menu_entry.enabled = enabled
+    
+    # Сбрасываем кэш для всех языков
+    invalidate_menu(menu_key=menu_key)
+    
+    logger.info(f"Пункт меню '{menu_key}' {'включен' if menu_entry.enabled else 'отключен'}")
+    return menu_entry.enabled
+
+
+def refresh_menu(tlgbot: Any, reload_plugins: bool = False) -> Dict[str, int]:
+    """
+    Обновляет содержимое меню без перезапуска бота.
+    
+    Аргументы:
+        tlgbot: Экземпляр TlgBotCore
+        reload_plugins: Если True - также перезагружает все плагины
+        
+    Возвращает:
+        Dict[str, int]: Статистика обновления в формате:
+            {'cleared': число сброшенных пунктов, 'added': число добавленных пунктов}
+    """
+    # Статистика операции
+    stats = {'cleared': 0, 'added': 0}
+    
+    # Если нужно перезагрузить плагины
+    if reload_plugins and hasattr(tlgbot, 'reload_plugins'):
+        # Сохраняем список текущих пунктов меню для анализа изменений
+        old_registry = set(MENU_REGISTRY.keys())
+        
+        # Очищаем реестр меню перед перезагрузкой плагинов
+        MENU_REGISTRY.clear()
+        stats['cleared'] = len(old_registry)
+        
+        # Перезагружаем плагины
+        try:
+            # Вызываем стандартную функцию перезагрузки плагинов в TlgBotCore
+            tlgbot.reload_plugins()
+            logger.info("Плагины успешно перезагружены")
+        except Exception as e:
+            logger.error(f"Ошибка при перезагрузке плагинов: {e}")
+        
+        # Считаем новые пункты меню
+        stats['added'] = len(MENU_REGISTRY)
+    else:
+        # Просто сбрасываем кэш, но не трогаем реестр
+        old_cache_size = len(MENU_CACHE)
+        MENU_CACHE.clear()
+        stats['cleared'] = old_cache_size
+    
+    # Логируем результаты операции
+    logger.info(f"Обновление меню: сброшено {stats['cleared']}, добавлено {stats['added']} пунктов")
+    
+    return stats
 
 
 def _is_admin_user(user_id: int, admins: List[int]) -> bool:
@@ -161,18 +293,27 @@ def build_menu(tlgbot: Any, lang: str, user_id: Optional[int] = None) -> List[Li
     # Создаем меню заново
     menu_entries = list(MENU_REGISTRY.values())
     
-    # Отфильтровываем пункты только для админов, если пользователь не админ
-    if not is_admin:
-        menu_entries = [entry for entry in menu_entries if not entry.admin_only]
+    # Отфильтровываем пункты:
+    # 1. Только для админов, если пользователь не админ
+    # 2. Отключенные пункты меню (enabled=False)
+    filtered_entries = []
+    for entry in menu_entries:
+        if not entry.enabled:
+            continue  # Пропускаем отключенные пункты
+            
+        if not is_admin and entry.admin_only:
+            continue  # Пропускаем админские пункты для обычных пользователей
+            
+        filtered_entries.append(entry)
     
     # Сортируем пункты по полю order
-    menu_entries.sort(key=lambda entry: entry.order)
+    filtered_entries.sort(key=lambda entry: entry.order)
     
     # Формируем кнопки, по две в ряд
     buttons = []
     row = []
     
-    for entry in menu_entries:
+    for entry in filtered_entries:
         # Получаем локализованный текст
         text = tlgbot.i18n.t(entry.tr_key, lang=lang) if hasattr(tlgbot, 'i18n') else entry.tr_key
         
@@ -249,8 +390,32 @@ async def dispatch_command(event: Any, key: str) -> bool:
         # Отправляем уведомление, что команда принята
         await event.answer("Выполняется...")
         
-        # Вызываем обработчик
-        await handler_func(event)
+        # Получаем язык пользователя для передачи в обработчик
+        user_lang = tlgbot.i18n.default_lang
+        try:
+            user = tlgbot.settings.get_user(event.sender_id)
+            if user:
+                user_lang = getattr(user, "lang", tlgbot.i18n.default_lang)
+        except Exception:
+            pass
+        
+        # Получаем статус админа
+        is_admin = _is_admin_user(event.sender_id, getattr(tlgbot, "admins", []))
+        
+        # Получаем параметры меню, если они есть
+        params = getattr(event, 'menu_params', []) if hasattr(event, 'menu_params') else []
+        
+        # Проверяем сигнатуру обработчика и вызываем с нужными аргументами
+        import inspect
+        handler_sig = inspect.signature(handler_func)
+        handler_params = list(handler_sig.parameters.keys())
+        
+        if len(handler_params) == 1:
+            # Если обработчик принимает только event
+            await handler_func(event)
+        elif len(handler_params) >= 3:
+            # Если обработчик принимает дополнительные параметры
+            await handler_func(event, user_lang, is_admin, params if len(handler_params) > 3 else None)
         logger.debug(f"Успешно выполнен обработчик для пункта меню '{key}'")
         return True
     except Exception as e:
