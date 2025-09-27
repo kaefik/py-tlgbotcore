@@ -505,6 +505,24 @@ def init_menu_system(tlgbot: Any) -> None:
             await send_main_menu(event)
             return True
             
+        # Авто-скрытие предыдущего меню (inline-кнопок) перед выполнением действия
+        # Телеграм позволяет отредактировать сообщение и убрать кнопки
+        try:
+            original_text = None
+            # event.edit доступен только для CallbackQuery; защищаемся
+            if hasattr(event, 'get_message'):
+                # В новых версиях Telethon у CallbackQuery есть get_message()
+                msg = await event.get_message()
+                if msg and hasattr(msg, 'message'):
+                    original_text = msg.message
+            # Фоллбек: иногда доступно event.message
+            if not original_text and hasattr(event, 'message') and getattr(event, 'message'):
+                original_text = getattr(event.message, 'message', None)
+            if hasattr(event, 'edit') and callable(getattr(event, 'edit')):
+                await event.edit(original_text or '...', buttons=None)
+        except Exception:
+            pass
+
         # Вызываем соответствующий обработчик
         success = await dispatch_command(event, menu_key)
         
