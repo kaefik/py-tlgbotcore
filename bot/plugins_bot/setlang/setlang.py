@@ -52,3 +52,23 @@ async def setlang_callback_handler(event):
     await event.edit(
         tlgbot.i18n.t("lang_changed", lang=user.lang, lang_name=config_tlg.AVAILABLE_LANGS[user.lang])
     )
+
+    # Дополнительно: пересоздаем reply-клавиатуру с кнопкой "Меню" в новом языке
+    # Чтобы пользователь сразу видел обновлённый текст кнопки без /start
+    try:
+        from telethon.tl.types import ReplyKeyboardMarkup, KeyboardButtonRow, KeyboardButton  # type: ignore
+        bot_client = getattr(event, 'client', None)
+        if bot_client and hasattr(bot_client, 'i18n'):
+            button_text = bot_client.i18n.t("menu_keyboard_button", lang=user.lang)
+            keyboard = ReplyKeyboardMarkup([
+                KeyboardButtonRow([
+                    KeyboardButton(button_text)
+                ])
+            ], resize=True, single_use=False, selective=False)
+            await event.respond(
+                bot_client.i18n.t("menu_keyboard_added", lang=user.lang),
+                buttons=keyboard
+            )
+    except Exception:
+        # Тихо игнорируем, чтобы не ломать процесс смены языка
+        pass

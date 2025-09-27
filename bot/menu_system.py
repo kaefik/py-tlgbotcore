@@ -25,6 +25,28 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
+async def _safe_notify(event: Any, text: str, alert: bool = False) -> None:
+    """Отправить уведомление пользователю безопасно.
+
+    Если это CallbackQuery (есть event.answer) – используем answer (с alert для всплывашек).
+    Если это NewMessage – шлём обычное сообщение через respond.
+    Любые ошибки заглушаются, чтобы не ронять основной поток.
+    """
+    try:
+        answer_method = getattr(event, 'answer', None)
+        if callable(answer_method):
+            await answer_method(text, alert=alert)  # type: ignore[arg-type]
+        else:
+            # Для NewMessage избегаем засорения чата техническими всплывающими сообщениями
+            # Показываем только значимые (alert=True) или ошибки
+            if alert or text != "Выполняется...":
+                respond_method = getattr(event, 'respond', None)
+                if callable(respond_method):
+                    await respond_method(text)
+    except Exception:
+        pass
+
+
 @dataclass
 class MenuEntry:
     """
@@ -367,13 +389,13 @@ async def dispatch_command(event: Any, key: str) -> bool:
         is_admin = _is_admin_user(user_id, getattr(tlgbot, "admins", []))
         if not is_admin:
             logger.warning(f"Пользователь {user_id} пытается получить доступ к админскому пункту меню '{key}'")
-            await event.answer("У вас нет прав для выполнения этого действия", alert=True)
+            await _safe_notify(event, "У вас нет прав для выполнения этого действия", alert=True)
             return False
     
     # Проверяем, загружен ли плагин
     if menu_entry.plugin not in tlgbot._plugins:
         logger.error(f"Плагин '{menu_entry.plugin}' не загружен")
-        await event.answer(f"Ошибка: плагин '{menu_entry.plugin}' не загружен", alert=True)
+        await _safe_notify(event, f"Ошибка: плагин '{menu_entry.plugin}' не загружен", alert=True)
         return False
     
     # Получаем обработчик из плагина
@@ -382,13 +404,17 @@ async def dispatch_command(event: Any, key: str) -> bool:
     
     if handler_func is None:
         logger.error(f"Обработчик '{menu_entry.handler}' не найден в плагине '{menu_entry.plugin}'")
-        await event.answer(f"Ошибка: обработчик не найден", alert=True)
+        await _safe_notify(event, "Ошибка: обработчик не найден", alert=True)
         return False
     
     # Вызываем обработчик
     try:
         # Отправляем уведомление, что команда принята
-        await event.answer("Выполняется...")
+        if hasattr(event, 'answer'):
+            try:
+                await event.answer("Выполняется...")  # type: ignore[attr-defined]
+            except Exception:
+                pass
         
         # Получаем язык пользователя для передачи в обработчик
         user_lang = tlgbot.i18n.default_lang
@@ -422,7 +448,7 @@ async def dispatch_command(event: Any, key: str) -> bool:
         logger.exception(f"Ошибка при вызове обработчика меню '{key}': {e}")
         # Отправляем уведомление об ошибке
         try:
-            await event.answer(f"Произошла ошибка при обработке команды", alert=True)
+            await _safe_notify(event, "Произошла ошибка при обработке команды", alert=True)
         except Exception:
             pass  # Игнорируем ошибку при отправке уведомления
         return False
