@@ -220,9 +220,19 @@ async def dispatch_command(event: Any, key: str) -> bool:
         logger.error("Не удалось получить экземпляр tlgbot из события")
         return False
     
+    # Проверяем права доступа, если пункт меню только для админов
+    if menu_entry.admin_only:
+        user_id = event.sender_id
+        is_admin = _is_admin_user(user_id, getattr(tlgbot, "admins", []))
+        if not is_admin:
+            logger.warning(f"Пользователь {user_id} пытается получить доступ к админскому пункту меню '{key}'")
+            await event.answer("У вас нет прав для выполнения этого действия", alert=True)
+            return False
+    
     # Проверяем, загружен ли плагин
     if menu_entry.plugin not in tlgbot._plugins:
         logger.error(f"Плагин '{menu_entry.plugin}' не загружен")
+        await event.answer(f"Ошибка: плагин '{menu_entry.plugin}' не загружен", alert=True)
         return False
     
     # Получаем обработчик из плагина
@@ -231,14 +241,25 @@ async def dispatch_command(event: Any, key: str) -> bool:
     
     if handler_func is None:
         logger.error(f"Обработчик '{menu_entry.handler}' не найден в плагине '{menu_entry.plugin}'")
+        await event.answer(f"Ошибка: обработчик не найден", alert=True)
         return False
     
     # Вызываем обработчик
     try:
+        # Отправляем уведомление, что команда принята
+        await event.answer("Выполняется...")
+        
+        # Вызываем обработчик
         await handler_func(event)
+        logger.debug(f"Успешно выполнен обработчик для пункта меню '{key}'")
         return True
     except Exception as e:
-        logger.exception(f"Ошибка при вызове обработчика меню: {e}")
+        logger.exception(f"Ошибка при вызове обработчика меню '{key}': {e}")
+        # Отправляем уведомление об ошибке
+        try:
+            await event.answer(f"Произошла ошибка при обработке команды", alert=True)
+        except Exception:
+            pass  # Игнорируем ошибку при отправке уведомления
         return False
 
 
@@ -253,20 +274,69 @@ def init_menu_system(tlgbot: Any) -> None:
     
     @tlgbot.on(events.CallbackQuery(pattern=r'^menu:'))
     async def menu_callback_router(event):
-        # Извлекаем ключ из callback_data
+        """
+        Маршрутизатор callback-запросов для системы меню.
+        
+        Обрабатывает callback-данные в формате:
+        - menu:key - для простых действий
+        - menu:key:param1:param2... - для действий с параметрами
+        """
+        # Извлекаем данные из callback_data
         callback_data = event.data.decode('utf-8')
         if not callback_data.startswith('menu:'):
             return
         
-        # Получаем ключ пункта меню
-        menu_key = callback_data[5:]  # Убираем префикс 'menu:'
+        # Разбираем параметры (если есть)
+        parts = callback_data[5:].split(':')
+        menu_key = parts[0]
+        
+        # Добавляем параметры к event для использования в обработчике
+        if len(parts) > 1:
+            params = parts[1:]
+            setattr(event, 'menu_params', params)
+            logger.debug(f"Вызов меню с параметрами: key={menu_key}, params={params}")
+        else:
+            setattr(event, 'menu_params', [])
+            logger.debug(f"Вызов меню без параметров: key={menu_key}")
         
         # Вызываем соответствующий обработчик
         success = await dispatch_command(event, menu_key)
         
         # Если обработчик не найден, сообщаем об этом пользователю
         if not success:
-            await event.answer("Обработчик для этого пункта меню не найден")
+            await event.answer("Обработчик для этого пункта меню не найден", alert=True)
+    
+    # Регистрируем специальный обработчик для текстовых сообщений, соответствующих меню
+    @tlgbot.on(events.NewMessage())
+    async def text_menu_handler(event):
+        """
+        Проверяет текстовые сообщения на соответствие пунктам меню.
+        Это позволяет пользователям вводить команды вручную, а не только через кнопки.
+        """
+        # Проверяем, что это текстовое сообщение
+        if not event.text:
+            return
+        
+        # Получаем экземпляр tlgbot
+        tlgbot = event.client
+        
+        # Определяем язык пользователя
+        lang = tlgbot.i18n.default_lang if hasattr(tlgbot, 'i18n') else "ru"
+        user_id = event.sender_id
+        if hasattr(tlgbot, 'settings') and tlgbot.settings:
+            user = tlgbot.settings.get_user(user_id)
+            if user:
+                lang = getattr(user, "lang", lang)
+        
+        # Проверяем, соответствует ли текст сообщения какому-либо пункту меню
+        for entry in MENU_REGISTRY.values():
+            menu_text = tlgbot.i18n.t(entry.tr_key, lang=lang) if hasattr(tlgbot, 'i18n') else entry.tr_key
+            
+            # Если текст сообщения совпадает с текстом пункта меню, вызываем обработчик
+            if event.text == menu_text:
+                logger.debug(f"Текстовое сообщение соответствует пункту меню: {entry.key}")
+                await dispatch_command(event, entry.key)
+                break
 
 
 async def send_main_menu(event: Any, lang: Optional[str] = None) -> None:
